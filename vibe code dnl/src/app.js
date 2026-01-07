@@ -6,6 +6,7 @@ const usersRouter = require('./routes/users');
 const loadsRouter = require('./routes/loads');
 const driversRouter = require('./routes/drivers');
 const documentsRouter = require('./routes/documents');
+const driverDocumentsRouter = require('./routes/driverDocuments');
 const path = require('path');
 
 // ...existing code...
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', usersRouter);
 app.use('/api/loads', loadsRouter);
 app.use('/api/drivers', driversRouter);
+app.use('/api/drivers', driverDocumentsRouter);
 
 // Route for dispatcher-driver assignments
 app.use('/api/assignments', assignmentsRouter);
