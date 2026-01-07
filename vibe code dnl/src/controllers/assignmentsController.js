@@ -12,6 +12,22 @@ exports.createAssignment = async (req, res) => {
     return res.status(400).json({ error: 'dispatcherId and driverId are required' });
   }
   try {
+    // Validate dispatcher exists and is actually a dispatcher
+    const [dispatcherRows] = await pool.query('SELECT id, role FROM Users WHERE id = ?', [dispatcherId]);
+    if (dispatcherRows.length === 0) {
+      return res.status(400).json({ error: 'Invalid dispatcherId' });
+    }
+    const dispatcherRole = String(dispatcherRows[0].role || '').toLowerCase();
+    if (dispatcherRole !== 'dispatcher') {
+      return res.status(400).json({ error: 'dispatcherId must belong to a user with role=dispatcher' });
+    }
+
+    // Validate driver exists
+    const [driverRows] = await pool.query('SELECT id FROM Drivers WHERE id = ?', [driverId]);
+    if (driverRows.length === 0) {
+      return res.status(400).json({ error: 'Invalid driverId' });
+    }
+
     await pool.query(
       'INSERT INTO DispatcherDriverAssignments (dispatcherId, driverId) VALUES (?, ?)',
       [dispatcherId, driverId]
