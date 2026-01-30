@@ -24,12 +24,26 @@ const generateInvoiceNumber = () => {
 // Get all invoices
 exports.getAllInvoices = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      `SELECT i.*, d.name as driverName, c.CompanyName 
-       FROM Invoices i 
-       JOIN Drivers d ON i.DriverID = d.id 
-       JOIN CompanyDetails c ON i.companyId = c.CompanyID`
-    );
+    const hasPayments = await tableExists(pool, 'InvoicePayments');
+
+    const sql = hasPayments
+      ? `SELECT i.*, d.name as driverName, c.CompanyName,
+           IFNULL(p.TotalPaid, 0) AS TotalPaid,
+           GREATEST(0, (IFNULL(i.TotalAmount, 0) - IFNULL(p.TotalPaid, 0))) AS Balance
+         FROM Invoices i
+         JOIN Drivers d ON i.DriverID = d.id
+         JOIN CompanyDetails c ON i.companyId = c.CompanyID
+         LEFT JOIN (
+           SELECT InvoiceID, SUM(Amount) AS TotalPaid
+           FROM InvoicePayments
+           GROUP BY InvoiceID
+         ) p ON p.InvoiceID = i.InvoiceID`
+      : `SELECT i.*, d.name as driverName, c.CompanyName
+         FROM Invoices i
+         JOIN Drivers d ON i.DriverID = d.id
+         JOIN CompanyDetails c ON i.companyId = c.CompanyID`;
+
+    const [rows] = await pool.query(sql);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -39,14 +53,28 @@ exports.getAllInvoices = async (req, res) => {
 // Get invoice by ID
 exports.getInvoiceById = async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      `SELECT i.*, d.name as driverName, c.CompanyName 
-       FROM Invoices i 
-       JOIN Drivers d ON i.DriverID = d.id 
-       JOIN CompanyDetails c ON i.companyId = c.CompanyID 
-       WHERE i.InvoiceID = ?`,
-      [req.params.invoiceId]
-    );
+    const hasPayments = await tableExists(pool, 'InvoicePayments');
+
+    const sql = hasPayments
+      ? `SELECT i.*, d.name as driverName, c.CompanyName,
+           IFNULL(p.TotalPaid, 0) AS TotalPaid,
+           GREATEST(0, (IFNULL(i.TotalAmount, 0) - IFNULL(p.TotalPaid, 0))) AS Balance
+         FROM Invoices i
+         JOIN Drivers d ON i.DriverID = d.id
+         JOIN CompanyDetails c ON i.companyId = c.CompanyID
+         LEFT JOIN (
+           SELECT InvoiceID, SUM(Amount) AS TotalPaid
+           FROM InvoicePayments
+           GROUP BY InvoiceID
+         ) p ON p.InvoiceID = i.InvoiceID
+         WHERE i.InvoiceID = ?`
+      : `SELECT i.*, d.name as driverName, c.CompanyName
+         FROM Invoices i
+         JOIN Drivers d ON i.DriverID = d.id
+         JOIN CompanyDetails c ON i.companyId = c.CompanyID
+         WHERE i.InvoiceID = ?`;
+
+    const [rows] = await pool.query(sql, [req.params.invoiceId]);
     if (rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
     res.json(rows[0]);
   } catch (err) {
@@ -58,14 +86,28 @@ exports.getInvoiceById = async (req, res) => {
 exports.getInvoicesByDriver = async (req, res) => {
   try {
     const driverId = req.params.driverId;
-    const [rows] = await pool.query(
-      `SELECT i.*, d.name as driverName, c.CompanyName 
-       FROM Invoices i 
-       JOIN Drivers d ON i.DriverID = d.id 
-       JOIN CompanyDetails c ON i.companyId = c.CompanyID 
-       WHERE i.DriverID = ?`,
-      [driverId]
-    );
+    const hasPayments = await tableExists(pool, 'InvoicePayments');
+
+    const sql = hasPayments
+      ? `SELECT i.*, d.name as driverName, c.CompanyName,
+           IFNULL(p.TotalPaid, 0) AS TotalPaid,
+           GREATEST(0, (IFNULL(i.TotalAmount, 0) - IFNULL(p.TotalPaid, 0))) AS Balance
+         FROM Invoices i
+         JOIN Drivers d ON i.DriverID = d.id
+         JOIN CompanyDetails c ON i.companyId = c.CompanyID
+         LEFT JOIN (
+           SELECT InvoiceID, SUM(Amount) AS TotalPaid
+           FROM InvoicePayments
+           GROUP BY InvoiceID
+         ) p ON p.InvoiceID = i.InvoiceID
+         WHERE i.DriverID = ?`
+      : `SELECT i.*, d.name as driverName, c.CompanyName
+         FROM Invoices i
+         JOIN Drivers d ON i.DriverID = d.id
+         JOIN CompanyDetails c ON i.companyId = c.CompanyID
+         WHERE i.DriverID = ?`;
+
+    const [rows] = await pool.query(sql, [driverId]);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

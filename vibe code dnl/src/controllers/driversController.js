@@ -31,7 +31,7 @@ exports.createDriver = async (req, res) => {
       'INSERT INTO Drivers (name, MC_number, truckType, contactNumber, email, joinDate, sales_agent_id, percentage) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
       [name, MC_number, truckType, contactNumber, email, joinDate, sales_agent_id, percentage]
     );
-    res.status(201).json({ id: result.insertId, name, MC_number, truckType, contactNumber, email, joinDate, sales_agent_id, percentage });
+    res.status(201).json({ id: result.insertId, name, MC_number, truckType, contactNumber, email, joinDate, sales_agent_id, percentage, status: 'inactive' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

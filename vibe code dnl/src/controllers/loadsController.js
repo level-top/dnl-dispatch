@@ -2,10 +2,26 @@
 // Controller for Loads CRUD operations
 const { pool } = require('../db');
 
+async function maybeActivateDriver(driverId, loadStatus) {
+  const normalizedStatus = String(loadStatus ?? '').trim().toLowerCase();
+  if (normalizedStatus !== 'booked') return;
+
+  const id = Number(driverId);
+  if (!Number.isFinite(id) || id <= 0) return;
+
+  // If the Drivers.status column doesn't exist yet, this will error; we intentionally
+  // swallow it so loads can still be created while migrations are being applied.
+  try {
+    await pool.query("UPDATE Drivers SET status = 'active' WHERE id = ?", [id]);
+  } catch {
+    // ignore
+  }
+}
+
 // Get all loads
 exports.getAllLoads = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM Loads');
+    const [rows] = await pool.query('SELECT Loads.*, Loads.driverName AS driverId FROM Loads');
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -15,7 +31,10 @@ exports.getAllLoads = async (req, res) => {
 // Get load by ID
 exports.getLoadById = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM Loads WHERE id = ?', [req.params.id]);
+    const [rows] = await pool.query(
+      'SELECT Loads.*, Loads.driverName AS driverId FROM Loads WHERE id = ?',
+      [req.params.id]
+    );
     if (rows.length === 0) return res.status(404).json({ error: 'Load not found' });
     res.json(rows[0]);
   } catch (err) {
@@ -29,6 +48,7 @@ exports.createLoad = async (req, res) => {
     const {
       pickedUp_dateTime,
       dropOff_dateTime,
+      driverId,
       driverName,
       dispatcherId,
       loadFrom,
@@ -50,6 +70,8 @@ exports.createLoad = async (req, res) => {
       rateConfStatus,
       expectedPaymentDate
     } = req.body;
+
+    const resolvedDriverId = driverId ?? driverName;
     // console.log('Creating new load:', req.body);
     // console.log(pickedUp_dateTime, dropOff_dateTime, driverName, dispatcherId, loadFrom, loadTo, brokerCompany, brokerMC, brokerName, loadNumber, loadAmount, loadPercentage, netAmount, loadStatus, dateTime);
     const [result] = await pool.query(
@@ -59,7 +81,7 @@ exports.createLoad = async (req, res) => {
       [
         pickedUp_dateTime,
         dropOff_dateTime,
-        driverName,
+        resolvedDriverId,
         dispatcherId,
         loadFrom,
         loadTo,
@@ -81,11 +103,15 @@ exports.createLoad = async (req, res) => {
         // dateTime
       ]
     );
+
+    await maybeActivateDriver(resolvedDriverId, loadStatus);
+
     res.status(201).json({
       id: result.insertId,
       pickedUp_dateTime,
       dropOff_dateTime,
-      driverName,
+      driverId: resolvedDriverId,
+      driverName: resolvedDriverId,
       dispatcherId,
       loadFrom,
       loadTo,
@@ -117,6 +143,7 @@ exports.updateLoad = async (req, res) => {
     const {
       pickedUp_dateTime,
       dropOff_dateTime,
+      driverId,
       driverName,
       dispatcherId,
       loadFrom,
@@ -138,6 +165,8 @@ exports.updateLoad = async (req, res) => {
       rateConfStatus,
       expectedPaymentDate
     } = req.body;
+
+    const resolvedDriverId = driverId ?? driverName;
     const [result] = await pool.query(
       `UPDATE Loads SET
         pickedUp_dateTime=?,
@@ -165,7 +194,7 @@ exports.updateLoad = async (req, res) => {
       [
         pickedUp_dateTime,
         dropOff_dateTime,
-        driverName,
+        resolvedDriverId,
         dispatcherId,
         loadFrom,
         loadTo,
@@ -189,11 +218,15 @@ exports.updateLoad = async (req, res) => {
       ]
     );
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Load not found' });
+
+    await maybeActivateDriver(resolvedDriverId, loadStatus);
+
     res.json({
       id: req.params.id,
       pickedUp_dateTime,
       dropOff_dateTime,
-      driverName,
+      driverId: resolvedDriverId,
+      driverName: resolvedDriverId,
       dispatcherId,
       loadFrom,
       loadTo,

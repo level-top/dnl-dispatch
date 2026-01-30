@@ -17,6 +17,8 @@ const allowedDocumentTypes = [
   'coi',
   'mcAuthority',
   'w9',
+  'voidedCheck',
+  'factoringCompany',
 ];
 
 const columnMap = {
@@ -25,6 +27,8 @@ const columnMap = {
   coi: 'coiDocumentPath',
   mcAuthority: 'mcAuthorityDocumentPath',
   w9: 'w9DocumentPath',
+  voidedCheck: 'voidedCheckDocumentPath',
+  factoringCompany: 'factoringCompanyDocumentPath',
 };
 
 // Configure multer storage
