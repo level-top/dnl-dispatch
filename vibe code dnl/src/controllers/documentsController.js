@@ -4,6 +4,7 @@ const { pool } = require('../db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { canAccessLoad } = require('../utils/access');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../../uploads/loads');
@@ -57,6 +58,9 @@ exports.uploadDocument = async (req, res) => {
   try {
     const loadId = req.params.id;
     const { documentType } = req.body; // 'bol', 'pod', or 'rateConf'
+
+    const allowed = await canAccessLoad(pool, req.user, loadId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
     
     if (!['bol', 'pod', 'rateConf'].includes(documentType)) {
       return res.status(400).json({ error: 'Invalid document type' });
@@ -105,6 +109,10 @@ exports.uploadDocument = async (req, res) => {
 exports.getDocument = async (req, res) => {
   try {
     const { id, filename } = req.params;
+
+    const allowed = await canAccessLoad(pool, req.user, id);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const filePath = path.join(uploadsDir, id, filename);
     
     if (!fs.existsSync(filePath)) {
@@ -122,6 +130,9 @@ exports.deleteDocument = async (req, res) => {
   try {
     const loadId = req.params.id;
     const { documentType } = req.body;
+
+    const allowed = await canAccessLoad(pool, req.user, loadId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
     
     if (!['bol', 'pod', 'rateConf'].includes(documentType)) {
       return res.status(400).json({ error: 'Invalid document type' });

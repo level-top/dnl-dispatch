@@ -1,0 +1,27 @@
+# Repo-wide ignores
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+
+# Local backups
+_backup_frontend_git/
+
+# Env
+.env*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+
+# Generated runtime artifacts
+_driver_extra_docs.json

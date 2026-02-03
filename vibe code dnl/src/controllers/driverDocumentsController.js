@@ -4,6 +4,7 @@ const { pool } = require('../db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { canAccessDriver } = require('../utils/access');
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, '../../uploads/drivers');
@@ -78,6 +79,9 @@ exports.uploadDriverDocument = async (req, res) => {
     const driverId = req.params.id;
     const { documentType } = req.body;
 
+    const allowed = await canAccessDriver(pool, req.user, driverId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     if (!allowedDocumentTypes.includes(documentType)) {
       return res.status(400).json({ error: 'Invalid document type' });
     }
@@ -113,6 +117,10 @@ exports.uploadDriverDocument = async (req, res) => {
 exports.getDriverDocument = async (req, res) => {
   try {
     const { id, filename } = req.params;
+
+    const allowed = await canAccessDriver(pool, req.user, id);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const filePath = path.join(uploadsDir, id, filename);
 
     if (!fs.existsSync(filePath)) {
@@ -130,6 +138,9 @@ exports.deleteDriverDocument = async (req, res) => {
   try {
     const driverId = req.params.id;
     const { documentType } = req.body;
+
+    const allowed = await canAccessDriver(pool, req.user, driverId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
 
     if (!allowedDocumentTypes.includes(documentType)) {
       return res.status(400).json({ error: 'Invalid document type' });

@@ -3,6 +3,9 @@
 const express = require('express');
 const router = express.Router();
 const { uploadDocument, getDocument, deleteDocument, upload } = require('../controllers/documentsController');
+const { requireAuth } = require('../middleware/auth');
+
+router.use(requireAuth);
 
 // Upload document for a load
 router.post('/loads/:id/upload-document', upload.single('document'), uploadDocument);

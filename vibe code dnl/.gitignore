@@ -1,0 +1,10 @@
+# Backend ignores
+node_modules/
+uploads/
+
+# Env
+.env*
+
+# Logs
+*.log
+npm-debug.log*

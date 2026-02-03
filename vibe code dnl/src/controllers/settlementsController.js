@@ -4,6 +4,7 @@
 const { pool } = require('../db');
 const { tableExists, hasColumns } = require('../utils/schema');
 const { getActorUserId, tryInsertAudit } = require('../utils/audit');
+const { canAccessDriver } = require('../utils/access');
 
 function yyyymmdd(dateStr) {
   return String(dateStr).replace(/-/g, '');
@@ -41,6 +42,9 @@ exports.createWeeklyDriverInvoice = async (req, res) => {
         error: 'driverId, companyId, periodStart, and periodEnd are required (YYYY-MM-DD).',
       });
     }
+
+    const allowed = await canAccessDriver(connection, req.user, driverId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
 
     const [driverRows] = await connection.query('SELECT id, name, percentage FROM Drivers WHERE id = ?', [driverId]);
     if (driverRows.length === 0) return res.status(404).json({ error: 'Driver not found' });
@@ -180,7 +184,7 @@ exports.createWeeklyDriverInvoice = async (req, res) => {
 
     res.status(500).json({
       error: err.message,
-      hint: 'If you just added schema_upgrade_weekly_settlement.sql, import it into MySQL and restart the server.',
+      hint: 'If you just added the weekly settlement schema upgrade, import db/schema_upgrade_weekly_settlement.sql into MySQL and restart the server.',
     });
   } finally {
     connection.release();

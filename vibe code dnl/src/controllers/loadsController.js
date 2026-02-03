@@ -1,6 +1,8 @@
 // src/controllers/loadsController.js
 // Controller for Loads CRUD operations
 const { pool } = require('../db');
+const { normalizeRole } = require('../middleware/auth');
+const { canAccessLoad } = require('../utils/access');
 
 async function maybeActivateDriver(driverId, loadStatus) {
   const normalizedStatus = String(loadStatus ?? '').trim().toLowerCase();
@@ -21,7 +23,32 @@ async function maybeActivateDriver(driverId, loadStatus) {
 // Get all loads
 exports.getAllLoads = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT Loads.*, Loads.driverName AS driverId FROM Loads');
+    const role = normalizeRole(req.user?.role);
+    const uid = Number(req.user?.id);
+
+    let rows;
+    if (role === 'admin') {
+      [rows] = await pool.query('SELECT Loads.*, Loads.driverName AS driverId FROM Loads');
+    } else if (role === 'dispatcher') {
+      [rows] = await pool.query(
+        `SELECT l.*, l.driverName AS driverId
+         FROM Loads l
+         WHERE l.dispatcherId = ?
+            OR l.driverName IN (SELECT driverId FROM DispatcherDriverAssignments WHERE dispatcherId = ?)`,
+        [uid, uid]
+      );
+    } else if (role === 'sales') {
+      [rows] = await pool.query(
+        `SELECT l.*, l.driverName AS driverId
+         FROM Loads l
+         JOIN Drivers d ON d.id = l.driverName
+         WHERE d.sales_agent_id = ?`,
+        [uid]
+      );
+    } else {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -31,6 +58,9 @@ exports.getAllLoads = async (req, res) => {
 // Get load by ID
 exports.getLoadById = async (req, res) => {
   try {
+    const allowed = await canAccessLoad(pool, req.user, req.params.id);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const [rows] = await pool.query(
       'SELECT Loads.*, Loads.driverName AS driverId FROM Loads WHERE id = ?',
       [req.params.id]
@@ -45,6 +75,10 @@ exports.getLoadById = async (req, res) => {
 // Create new load
 exports.createLoad = async (req, res) => {
   try {
+    const role = normalizeRole(req.user?.role);
+    const uid = Number(req.user?.id);
+    if (role === 'sales') return res.status(403).json({ error: 'Forbidden' });
+
     const {
       pickedUp_dateTime,
       dropOff_dateTime,
@@ -74,6 +108,8 @@ exports.createLoad = async (req, res) => {
     const resolvedDriverId = driverId ?? driverName;
     // console.log('Creating new load:', req.body);
     // console.log(pickedUp_dateTime, dropOff_dateTime, driverName, dispatcherId, loadFrom, loadTo, brokerCompany, brokerMC, brokerName, loadNumber, loadAmount, loadPercentage, netAmount, loadStatus, dateTime);
+    const effectiveDispatcherId = role === 'dispatcher' ? uid : dispatcherId;
+
     const [result] = await pool.query(
       `INSERT INTO Loads (
         pickedUp_dateTime, dropOff_dateTime, driverName, dispatcherId, loadFrom, loadTo, brokerCompany, brokerMC, brokerName, loadNumber, loadAmount, miles, loadStatus, equipmentType, loadCategory, paymentTerms, quickPayFee, bolStatus, podStatus, rateConfStatus, expectedPaymentDate
@@ -82,7 +118,7 @@ exports.createLoad = async (req, res) => {
         pickedUp_dateTime,
         dropOff_dateTime,
         resolvedDriverId,
-        dispatcherId,
+        effectiveDispatcherId,
         loadFrom,
         loadTo,
         brokerCompany,
@@ -112,7 +148,7 @@ exports.createLoad = async (req, res) => {
       dropOff_dateTime,
       driverId: resolvedDriverId,
       driverName: resolvedDriverId,
-      dispatcherId,
+      dispatcherId: effectiveDispatcherId,
       loadFrom,
       loadTo,
       brokerCompany,
@@ -140,6 +176,13 @@ exports.createLoad = async (req, res) => {
 // Update load by ID
 exports.updateLoad = async (req, res) => {
   try {
+    const role = normalizeRole(req.user?.role);
+    const uid = Number(req.user?.id);
+    if (role === 'sales') return res.status(403).json({ error: 'Forbidden' });
+
+    const allowed = await canAccessLoad(pool, req.user, req.params.id);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const {
       pickedUp_dateTime,
       dropOff_dateTime,
@@ -167,6 +210,8 @@ exports.updateLoad = async (req, res) => {
     } = req.body;
 
     const resolvedDriverId = driverId ?? driverName;
+    const effectiveDispatcherId = role === 'dispatcher' ? uid : dispatcherId;
+
     const [result] = await pool.query(
       `UPDATE Loads SET
         pickedUp_dateTime=?,
@@ -195,7 +240,7 @@ exports.updateLoad = async (req, res) => {
         pickedUp_dateTime,
         dropOff_dateTime,
         resolvedDriverId,
-        dispatcherId,
+        effectiveDispatcherId,
         loadFrom,
         loadTo,
         brokerCompany,
@@ -227,7 +272,7 @@ exports.updateLoad = async (req, res) => {
       dropOff_dateTime,
       driverId: resolvedDriverId,
       driverName: resolvedDriverId,
-      dispatcherId,
+      dispatcherId: effectiveDispatcherId,
       loadFrom,
       loadTo,
       brokerCompany,
@@ -255,6 +300,9 @@ exports.updateLoad = async (req, res) => {
 // Delete load by ID
 exports.deleteLoad = async (req, res) => {
   try {
+    const role = normalizeRole(req.user?.role);
+    if (role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
     const [result] = await pool.query('DELETE FROM Loads WHERE id = ?', [req.params.id]);
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Load not found' });
     res.json({ message: 'Load deleted' });

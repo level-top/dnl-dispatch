@@ -2,6 +2,7 @@
 // Routes for driver document uploads
 const express = require('express');
 const router = express.Router();
+const { requireAuth } = require('../middleware/auth');
 
 const {
   upload,
@@ -9,6 +10,8 @@ const {
   getDriverDocument,
   deleteDriverDocument,
 } = require('../controllers/driverDocumentsController');
+
+router.use(requireAuth);
 
 // Upload a document for a driver
 router.post('/:id/upload-document', upload.single('document'), uploadDriverDocument);

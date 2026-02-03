@@ -2,7 +2,10 @@
 // Express router for Invoices CRUD and Transactional Operations
 const express = require('express');
 const invoicesController = require('../controllers/invoicesController');
+const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
+
+router.use(requireAuth);
 
 // Get all invoices
 router.get('/', invoicesController.getAllInvoices);

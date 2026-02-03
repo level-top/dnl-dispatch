@@ -3,8 +3,11 @@
 
 const express = require('express');
 const settlementsController = require('../controllers/settlementsController');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+
+router.use(requireAuth);
 
 // Create a weekly invoice for a driver based on delivered loads.
 router.post('/weekly', settlementsController.createWeeklyDriverInvoice);

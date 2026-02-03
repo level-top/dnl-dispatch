@@ -3,6 +3,8 @@
 const { pool } = require('../db');
 const { tableExists, hasColumns } = require('../utils/schema');
 const { getActorUserId, tryInsertAudit } = require('../utils/audit');
+const { normalizeRole } = require('../middleware/auth');
+const { canAccessDriver, canAccessLoad, canAccessInvoice } = require('../utils/access');
 
 function round2(value) {
   const n = Number(value) || 0;
@@ -26,24 +28,37 @@ exports.getAllInvoices = async (req, res) => {
   try {
     const hasPayments = await tableExists(pool, 'InvoicePayments');
 
+    const role = normalizeRole(req.user?.role);
+    const uid = Number(req.user?.id);
+    const accessJoin =
+      role === 'dispatcher'
+        ? 'JOIN DispatcherDriverAssignments dda ON dda.driverId = d.id AND dda.dispatcherId = ?'
+        : '';
+    const accessWhere = role === 'sales' ? 'WHERE d.sales_agent_id = ?' : '';
+    const accessParams = role === 'dispatcher' || role === 'sales' ? [uid] : [];
+
     const sql = hasPayments
       ? `SELECT i.*, d.name as driverName, c.CompanyName,
            IFNULL(p.TotalPaid, 0) AS TotalPaid,
            GREATEST(0, (IFNULL(i.TotalAmount, 0) - IFNULL(p.TotalPaid, 0))) AS Balance
          FROM Invoices i
          JOIN Drivers d ON i.DriverID = d.id
+         ${accessJoin}
          JOIN CompanyDetails c ON i.companyId = c.CompanyID
          LEFT JOIN (
            SELECT InvoiceID, SUM(Amount) AS TotalPaid
            FROM InvoicePayments
            GROUP BY InvoiceID
-         ) p ON p.InvoiceID = i.InvoiceID`
+         ) p ON p.InvoiceID = i.InvoiceID
+         ${accessWhere}`
       : `SELECT i.*, d.name as driverName, c.CompanyName
          FROM Invoices i
          JOIN Drivers d ON i.DriverID = d.id
-         JOIN CompanyDetails c ON i.companyId = c.CompanyID`;
+         ${accessJoin}
+         JOIN CompanyDetails c ON i.companyId = c.CompanyID
+         ${accessWhere}`;
 
-    const [rows] = await pool.query(sql);
+    const [rows] = await pool.query(sql, accessParams);
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -53,6 +68,9 @@ exports.getAllInvoices = async (req, res) => {
 // Get invoice by ID
 exports.getInvoiceById = async (req, res) => {
   try {
+    const allowed = await canAccessInvoice(pool, req.user, req.params.invoiceId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const hasPayments = await tableExists(pool, 'InvoicePayments');
 
     const sql = hasPayments
@@ -86,6 +104,10 @@ exports.getInvoiceById = async (req, res) => {
 exports.getInvoicesByDriver = async (req, res) => {
   try {
     const driverId = req.params.driverId;
+
+    const allowed = await canAccessDriver(pool, req.user, driverId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const hasPayments = await tableExists(pool, 'InvoicePayments');
 
     const sql = hasPayments
@@ -128,6 +150,16 @@ exports.createInvoice = async (req, res) => {
     console.log(selectedLoadIds);
     if (!driverId || !companyId) {
       return res.status(400).json({ error: 'driverId and companyId are required' });
+    }
+
+    const allowedDriver = await canAccessDriver(connection, req.user, driverId);
+    if (!allowedDriver) return res.status(403).json({ error: 'Forbidden' });
+
+    if (Array.isArray(selectedLoadIds) && selectedLoadIds.length > 0) {
+      for (const loadId of selectedLoadIds) {
+        const allowedLoad = await canAccessLoad(connection, req.user, loadId);
+        if (!allowedLoad) return res.status(403).json({ error: 'Forbidden' });
+      }
     }
 
     // Start transaction
@@ -233,6 +265,10 @@ exports.createInvoice = async (req, res) => {
 exports.getLoadsForInvoice = async (req, res) => {
   try {
     const invoiceId = req.params.invoiceId;
+
+    const allowed = await canAccessInvoice(pool, req.user, invoiceId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const [rows] = await pool.query(
       'SELECT * FROM Loads WHERE invoice_number = ?',
       [String(invoiceId)]
@@ -247,6 +283,10 @@ exports.getLoadsForInvoice = async (req, res) => {
 exports.getPaymentsForInvoice = async (req, res) => {
   try {
     const invoiceId = req.params.invoiceId;
+
+    const allowed = await canAccessInvoice(pool, req.user, invoiceId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const exists = await tableExists(pool, 'InvoicePayments');
     if (!exists) return res.json([]);
 
@@ -264,6 +304,10 @@ exports.getPaymentsForInvoice = async (req, res) => {
 exports.getAuditForInvoice = async (req, res) => {
   try {
     const invoiceId = req.params.invoiceId;
+
+    const allowed = await canAccessInvoice(pool, req.user, invoiceId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const exists = await tableExists(pool, 'AuditLog');
     if (!exists) return res.json([]);
 
@@ -289,6 +333,9 @@ exports.updateInvoice = async (req, res) => {
   try {
     const invoiceId = req.params.invoiceId;
     const { InvoiceNumber, InvoiceDate, TotalAmount, InvoiceStatus, PaymentDate } = req.body;
+
+    const allowed = await canAccessInvoice(connection, req.user, invoiceId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
 
     // Start transaction
     await connection.beginTransaction();
@@ -360,6 +407,10 @@ exports.payInvoice = async (req, res) => {
   const performedByUserId = getActorUserId(req);
   try {
     const invoiceId = req.params.invoiceId;
+
+    const allowed = await canAccessInvoice(connection, req.user, invoiceId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const paymentDate = new Date().toISOString().split('T')[0];
     const paymentAmount = req.body?.amount; // optional
 
@@ -505,6 +556,10 @@ exports.undoPayInvoice = async (req, res) => {
   const performedByUserId = getActorUserId(req);
   try {
     const invoiceId = req.params.invoiceId;
+
+    const allowed = await canAccessInvoice(connection, req.user, invoiceId);
+    if (!allowed) return res.status(403).json({ error: 'Forbidden' });
+
     const reason = req?.body?.reason;
 
     await connection.beginTransaction();
@@ -572,6 +627,10 @@ exports.deleteInvoice = async (req, res) => {
   const connection = await pool.getConnection();
   try {
     const invoiceId = req.params.invoiceId;
+
+    if (normalizeRole(req.user?.role) !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
 
     // Start transaction
     await connection.beginTransaction();
