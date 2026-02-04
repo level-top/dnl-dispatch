@@ -59,7 +59,7 @@ body {
   }
 
   /* Ensure 2-column grid doesn't overflow */
-  .grid.grid-cols-1.md\\:grid-cols-2 {
+  .grid.grid-cols-1.md\:grid-cols-2 {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 1rem !important;
