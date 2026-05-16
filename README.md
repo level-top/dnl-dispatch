@@ -45,52 +45,155 @@ $env:PORT=5000
 npm run dev
 ```
 
-## Docker Deploy
+## Production Deployment
 
-This repo now includes a Docker Compose setup for VPS deployment using the current MySQL-backed application.
+Recommended production target: one VPS running Docker with Nginx on the host.
 
-Files:
-- `docker-compose.yml`
-- `.env.example`
-- `front_end vibecode dnl/dnl_front_end/Dockerfile`
-- `vibe code dnl/Dockerfile`
+Architecture:
+- Frontend container listens on internal port `3000`
+- Backend container listens on internal port `5000`
+- MySQL runs in Docker with a persistent named volume
+- Uploaded files live in a persistent named volume
+- Nginx on the VPS terminates TLS and reverse-proxies by domain/subdomain
 
-Recommended layout:
-- Frontend container on internal port `3000`
-- Backend container on internal port `5000`
-- MySQL container with a persistent named volume
-- Uploads stored in a persistent named volume
-- Nginx on the VPS host reverse-proxying public domains to the containers
+Recommended domains:
+- `dispatch.example.com` -> frontend
+- `api.dispatch.example.com` -> backend
 
-Initial setup:
+Important:
+- Do not use `docker-compose.local.yml` on the VPS.
+- Do not expose MySQL publicly.
+- Do not bind the app publicly to `3000` or `5000`.
+- If another app already uses VPS port `3000`, that is fine. Keep this app behind Nginx on localhost-only container bindings.
+
+### 1. Copy the repo to the VPS
+
+```bash
+git clone https://github.com/level-top/dnl-dispatch.git
+cd dnl-dispatch
+```
+
+### 2. Create production environment values
 
 ```bash
 cp .env.example .env
 ```
 
-Update `.env` with your real domain names, DB passwords, and JWT secret.
+Update `.env` with real values:
 
-Start the stack:
+```env
+MYSQL_DATABASE=dispatch_todo_app
+MYSQL_USER=dnl
+MYSQL_PASSWORD=use-a-strong-password
+MYSQL_ROOT_PASSWORD=use-a-different-strong-root-password
 
-```bash
-docker compose up -d --build
+JWT_SECRET=use-a-long-random-secret
+CORS_ORIGIN=https://dispatch.example.com
+SCREENSHOT_ALLOWED_HOSTS=dispatch.example.com,api.dispatch.example.com
+
+NEXT_PUBLIC_API_BASE=https://api.dispatch.example.com/api
 ```
 
-Useful commands:
+### 3. Add VPS-only localhost port bindings
 
-```bash
-docker compose ps
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f db
-docker compose down
+Create `docker-compose.vps.yml`:
+
+```yaml
+services:
+	backend:
+		ports:
+			- "127.0.0.1:5001:5000"
+
+	frontend:
+		ports:
+			- "127.0.0.1:3001:3000"
 ```
 
-Notes:
-- The MySQL container initializes from the SQL files in `db/` on first boot only.
-- Uploaded files are stored in the `uploads_data` Docker volume so they survive container rebuilds.
+This keeps the containers private while allowing host Nginx to proxy to them.
+
+### 4. Start the production stack
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
+```
+
+Check status:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.vps.yml ps
+docker compose -f docker-compose.yml -f docker-compose.vps.yml logs -f backend
+docker compose -f docker-compose.yml -f docker-compose.vps.yml logs -f frontend
+docker compose -f docker-compose.yml -f docker-compose.vps.yml logs -f db
+```
+
+### 5. Configure Nginx on the VPS host
+
+Example Nginx config:
+
+```nginx
+server {
+		listen 80;
+		server_name dispatch.example.com;
+
+		location / {
+				proxy_pass http://127.0.0.1:3001;
+				proxy_http_version 1.1;
+				proxy_set_header Host $host;
+				proxy_set_header X-Real-IP $remote_addr;
+				proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+				proxy_set_header X-Forwarded-Proto $scheme;
+				proxy_set_header Upgrade $http_upgrade;
+				proxy_set_header Connection "upgrade";
+		}
+}
+
+server {
+		listen 80;
+		server_name api.dispatch.example.com;
+
+		location / {
+				proxy_pass http://127.0.0.1:5001;
+				proxy_http_version 1.1;
+				proxy_set_header Host $host;
+				proxy_set_header X-Real-IP $remote_addr;
+				proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+				proxy_set_header X-Forwarded-Proto $scheme;
+		}
+}
+```
+
+### 6. Enable TLS
+
+After DNS points to the VPS:
+
+```bash
+sudo certbot --nginx -d dispatch.example.com -d api.dispatch.example.com
+```
+
+### 7. Verify production
+
+```bash
+curl -I https://dispatch.example.com
+curl -I https://api.dispatch.example.com/
+```
+
+Expected result:
+- frontend returns `200`
+- backend root returns `200`
+- protected API routes return `401` without a token
+
+### 8. Ongoing updates
+
+```bash
+git pull
+docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
+```
+
+Production notes:
+- The MySQL container initializes from the SQL files in `db/` only on the first boot of a fresh database volume.
+- Uploaded files are stored in the `uploads_data` volume and survive container rebuilds.
 - The backend screenshot route uses Chromium inside the container.
-- Do not expose ports `3000`, `5000`, or `3306` publicly; reverse-proxy only through Nginx.
+- Back up both `mysql_data` and `uploads_data`.
 
 ## PostgreSQL
 
