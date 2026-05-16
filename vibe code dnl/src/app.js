@@ -14,12 +14,15 @@ const agreementTemplateRouter = require('./routes/agreementTemplate');
 const uploadsRouter = require('./routes/uploads');
 const path = require('path');
 const { requireAuth, requireRole } = require('./middleware/auth');
+const { applyApiSecurityHeaders, getJwtSecret } = require('./config/security');
 
 // ...existing code...
 const puppeteer = require('puppeteer');
 
 const cors = require('cors');
 const app = express();
+
+getJwtSecret();
 
 function parseCsvEnv(name) {
   const raw = process.env[name];
@@ -43,6 +46,7 @@ app.use(
       : undefined
   )
 ); // If CORS_ORIGIN is unset, keep current permissive behavior.
+app.use(applyApiSecurityHeaders);
 app.use(express.json());
 // ...existing code...
 
@@ -136,7 +140,15 @@ app.get('/api/screenshot', requireAuth, requireRole('admin'), async (req, res) =
   }
 
   try {
-    const browser = await puppeteer.launch();
+    const launchOptions = {};
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+    if (process.env.PUPPETEER_DISABLE_SANDBOX === '1') {
+      launchOptions.args = ['--no-sandbox', '--disable-setuid-sandbox'];
+    }
+
+    const browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     page.setDefaultNavigationTimeout(30_000);
     await page.goto(parsedUrl.toString(), { waitUntil: 'networkidle2' });

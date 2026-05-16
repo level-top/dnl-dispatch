@@ -12,6 +12,9 @@ _backup_frontend_git/
 # Env
 .env*
 
+# Local database exports / live dumps
+/dispatch_todo_app.sql
+
 # Logs
 *.log
 npm-debug.log*

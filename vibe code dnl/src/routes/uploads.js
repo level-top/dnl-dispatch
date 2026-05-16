@@ -8,16 +8,13 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 
 const { pool } = require('../db');
+const { getJwtSecret } = require('../config/security');
 const { canAccessDriver, canAccessLoad } = require('../utils/access');
 const { normalizeRole } = require('../middleware/auth');
 
 const router = express.Router();
 
 const uploadsRoot = path.join(__dirname, '..', '..', 'uploads');
-
-function getJwtSecret() {
-  return process.env.JWT_SECRET || 'dev-secret-change-me';
-}
 
 function requireUploadsAuth(req, res, next) {
   const header = String(req.headers.authorization || '');
@@ -46,17 +43,29 @@ function safeJoin(baseDir, ...segments) {
   return targetPath;
 }
 
+function matchUploadPath(pattern, reqPath) {
+  const match = String(reqPath || '').match(pattern);
+  if (!match) return null;
+  return {
+    recordId: match[1],
+    relativePath: match[2] || '',
+  };
+}
+
 // Public: agreements (signing links)
 router.use('/agreements', express.static(path.join(uploadsRoot, 'agreements')));
 
 // Protected: loads
-router.get('/loads/:loadId/*', requireUploadsAuth, async (req, res) => {
+router.get(/^\/loads\/([^/]+)\/(.+)$/, requireUploadsAuth, async (req, res) => {
   try {
-    const loadId = req.params.loadId;
+    const match = matchUploadPath(/^\/loads\/([^/]+)\/(.+)$/, req.path);
+    if (!match) return res.status(400).json({ error: 'Invalid path' });
+
+    const loadId = match.recordId;
     const allowed = await canAccessLoad(pool, req.user, loadId);
     if (!allowed) return res.status(403).json({ error: 'Forbidden' });
 
-    const rest = req.params[0] || '';
+    const rest = match.relativePath;
     const baseDir = path.join(uploadsRoot, 'loads', String(loadId));
     const fullPath = safeJoin(baseDir, rest);
     if (!fullPath) return res.status(400).json({ error: 'Invalid path' });
@@ -68,13 +77,16 @@ router.get('/loads/:loadId/*', requireUploadsAuth, async (req, res) => {
 });
 
 // Protected: drivers
-router.get('/drivers/:driverId/*', requireUploadsAuth, async (req, res) => {
+router.get(/^\/drivers\/([^/]+)\/(.+)$/, requireUploadsAuth, async (req, res) => {
   try {
-    const driverId = req.params.driverId;
+    const match = matchUploadPath(/^\/drivers\/([^/]+)\/(.+)$/, req.path);
+    if (!match) return res.status(400).json({ error: 'Invalid path' });
+
+    const driverId = match.recordId;
     const allowed = await canAccessDriver(pool, req.user, driverId);
     if (!allowed) return res.status(403).json({ error: 'Forbidden' });
 
-    const rest = req.params[0] || '';
+    const rest = match.relativePath;
     const baseDir = path.join(uploadsRoot, 'drivers', String(driverId));
     const fullPath = safeJoin(baseDir, rest);
     if (!fullPath) return res.status(400).json({ error: 'Invalid path' });

@@ -3,10 +3,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { pool } = require('../db');
 const { normalizeRole } = require('../middleware/auth');
-
-function getJwtSecret() {
-  return process.env.JWT_SECRET || 'dev-secret-change-me';
-}
+const { getJwtSecret } = require('../config/security');
 
 function isBcryptHash(value) {
   return typeof value === 'string' && value.startsWith('$2');

@@ -1,9 +1,6 @@
 // src/middleware/auth.js
 const jwt = require('jsonwebtoken');
-
-function getJwtSecret() {
-  return process.env.JWT_SECRET || 'dev-secret-change-me';
-}
+const { getJwtSecret } = require('../config/security');
 
 function normalizeRole(role) {
   return String(role || '').toLowerCase();

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	createDriverAgreement,
@@ -23,12 +24,18 @@ function getFilenameFromPath(path) {
 }
 
 export default function DriverDetailsClient({ driverId }) {
+  const params = useParams();
+  const routeDriverId = params?.id;
+
 	const normalizedDriverId = useMemo(() => {
-		if (driverId === null || driverId === undefined) return null;
-		const n = Number(driverId);
+    const propDriverId =
+      typeof driverId === "string" || typeof driverId === "number" ? driverId : null;
+    const candidate = propDriverId ?? routeDriverId;
+    if (candidate === null || candidate === undefined) return null;
+    const n = Number(candidate);
 		if (!Number.isFinite(n)) return null;
-		return String(driverId);
-	}, [driverId]);
+    return String(candidate);
+  }, [driverId, routeDriverId]);
 
 	const [driver, setDriver] = useState(null);
 	const [extraDocuments, setExtraDocuments] = useState([]);
