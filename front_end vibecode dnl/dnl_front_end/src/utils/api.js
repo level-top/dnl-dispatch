@@ -210,7 +210,7 @@ export const uploadLoadDocument = async (loadId, documentType, file) => {
   // Append documentType before the file so Multer can access it during filename generation.
   formData.append('documentType', documentType);
   formData.append('document', file);
-  
+
   const res = await fetch(`${API_BASE_ROOT}/loads/${loadId}/upload-document`, {
     method: 'POST',
     body: formData,
@@ -218,7 +218,7 @@ export const uploadLoadDocument = async (loadId, documentType, file) => {
       ...authHeader(),
     },
   });
-  
+
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 };
@@ -229,7 +229,7 @@ export const deleteLoadDocument = async (loadId, documentType) => {
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify({ documentType }),
   });
-  
+
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 };
@@ -359,3 +359,38 @@ export const updateAgreementTemplate = (payload) =>
     method: 'PUT',
     body: JSON.stringify(payload || {}),
   });
+
+// Admin backups
+export const getBackups = async () => {
+  const data = await fetchAPI('/backups');
+  return Array.isArray(data?.files) ? data.files : [];
+};
+
+export const createBackupNow = () => fetchAPI('/backups', { method: 'POST' });
+
+export const deleteBackup = (fileName) =>
+  fetchAPI(`/backups/${encodeURIComponent(fileName)}`, { method: 'DELETE' });
+
+export const downloadBackup = async (fileName) => {
+  const res = await fetch(`${API_BASE}/backups/${encodeURIComponent(fileName)}/download`, {
+    method: 'GET',
+    headers: {
+      ...authHeader(),
+    },
+  });
+
+  if (!res.ok) {
+    const body = await readErrorBody(res);
+    throw new ApiError(messageFromBody(body) || `Request failed (${res.status})`, res.status, body);
+  }
+
+  const blob = await res.blob();
+  const objectUrl = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = objectUrl;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(objectUrl);
+};

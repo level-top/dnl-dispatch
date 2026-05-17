@@ -25,23 +25,36 @@ import {
   TableEmptyState,
 } from "../../components/DataTable";
 
+const EMPTY_DRIVER_FORM = {
+  name: "",
+  MC_number: "",
+  truckType: "",
+  contactNumber: "",
+  email: "",
+  joinDate: "",
+  sales_agent_id: "",
+  percentage: "",
+};
+
+function normalizeRole(role) {
+  const normalized = String(role || "").toLowerCase().trim();
+  if (normalized === "sales_agent" || normalized === "salesagent" || normalized === "sales agent") {
+    return "sales";
+  }
+  return normalized;
+}
+
 export default function DriversPage() {
   const [drivers, setDrivers] = useState([]);
   const [me, setMe] = useState(null);
-  const [form, setForm] = useState({
-    name: "",
-    MC_number: "",
-    truckType: "",
-    contactNumber: "",
-    email: "",
-    joinDate: "",
-    sales_agent_id: "",
-    percentage: ""
-  });
+  const [form, setForm] = useState(EMPTY_DRIVER_FORM);
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [extraDocuments, setExtraDocuments] = useState([]);
+  const normalizedRole = normalizeRole(me?.role);
+  const isSalesUser = normalizedRole === "sales";
+  const lockedSalesAgentId = isSalesUser && me?.id != null ? String(me.id) : "";
 
   const fetchExtraDocuments = async (driverId) => {
     if (!driverId) {
@@ -75,10 +88,28 @@ export default function DriversPage() {
   }, []);
 
   useEffect(() => {
+    if (!isSalesUser || editingId) return;
+    setForm((current) => {
+      if (current.sales_agent_id === lockedSalesAgentId) {
+        return current;
+      }
+      return {
+        ...current,
+        sales_agent_id: lockedSalesAgentId,
+      };
+    });
+  }, [editingId, isSalesUser, lockedSalesAgentId]);
+
+  useEffect(() => {
     fetchExtraDocuments(editingId);
   }, [editingId]);
 
-  const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    if (isSalesUser && e.target.name === "sales_agent_id") {
+      return;
+    }
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -90,14 +121,8 @@ export default function DriversPage() {
         await createDriver(form);
       }
       setForm({
-        name: "",
-        MC_number: "",
-        truckType: "",
-        contactNumber: "",
-        email: "",
-        joinDate: "",
-        sales_agent_id: "",
-        percentage: ""
+        ...EMPTY_DRIVER_FORM,
+        sales_agent_id: lockedSalesAgentId,
       });
       setEditingId(null);
       fetchDrivers();
@@ -115,7 +140,7 @@ export default function DriversPage() {
       contactNumber: driver.contactNumber || "",
       email: driver.email || "",
       joinDate: driver.joinDate ? String(driver.joinDate).slice(0, 10) : "",
-      sales_agent_id: driver.sales_agent_id || "",
+      sales_agent_id: driver.sales_agent_id != null ? String(driver.sales_agent_id) : "",
       percentage: driver.percentage || ""
     });
     setEditingId(driver.id);
@@ -252,7 +277,7 @@ export default function DriversPage() {
           </div>
           <div>
             <label htmlFor="sales_agent_id" className="block mb-1 font-medium">Sales Agent ID</label>
-            <input id="sales_agent_id" name="sales_agent_id" type="text" value={form.sales_agent_id} onChange={handleChange} placeholder="Sales Agent ID" className="text-gray-500 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full" autoComplete="off" />
+            <input id="sales_agent_id" name="sales_agent_id" type="text" value={form.sales_agent_id} onChange={handleChange} placeholder="Sales Agent ID" className="text-gray-500 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed" autoComplete="off" readOnly={isSalesUser} disabled={isSalesUser} />
           </div>
           <div>
             <label htmlFor="percentage" className="block mb-1 font-medium">Percentage</label>
@@ -268,14 +293,8 @@ export default function DriversPage() {
                 className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-2 rounded-lg shadow transition"
                 onClick={() => {
                   setForm({
-                    name: "",
-                    MC_number: "",
-                    truckType: "",
-                    contactNumber: "",
-                    email: "",
-                    joinDate: "",
-                    sales_agent_id: "",
-                    percentage: "",
+                    ...EMPTY_DRIVER_FORM,
+                    sales_agent_id: lockedSalesAgentId,
                   });
                   setEditingId(null);
                   setError("");

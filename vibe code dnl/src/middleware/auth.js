@@ -3,7 +3,14 @@ const jwt = require('jsonwebtoken');
 const { getJwtSecret } = require('../config/security');
 
 function normalizeRole(role) {
-  return String(role || '').toLowerCase();
+  const normalized = String(role || '').toLowerCase().trim();
+  if (normalized === 'sales_agent' || normalized === 'salesagent' || normalized === 'sales agent') {
+    return 'sales';
+  }
+  if (normalized === 'dispatch' || normalized === 'dispatcher_agent' || normalized === 'dispatcher agent') {
+    return 'dispatcher';
+  }
+  return normalized;
 }
 
 function requireAuth(req, res, next) {

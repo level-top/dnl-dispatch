@@ -195,6 +195,63 @@ Production notes:
 - The backend screenshot route uses Chromium inside the container.
 - Back up both `mysql_data` and `uploads_data`.
 
+## Daily Database Backups
+
+The repo now includes a daily MySQL backup workflow that writes compressed dumps into `backups/daily/` on the host. That host folder is mounted into the backend container as `/app/backups`, which allows admin-only API access to the saved dumps.
+
+### Manual backup
+
+From the repo root on the server:
+
+```bash
+bash ./scripts/db-backup.sh
+```
+
+What it does:
+- creates `backups/daily/` if it does not exist
+- runs `mysqldump` inside the running `db` container
+- stores a file like `dnl-backup-2026-05-18_02-00-00.sql.gz`
+- deletes backup files older than `BACKUP_RETENTION_DAYS` days
+
+### Install daily cron job
+
+On a Linux VPS:
+
+```bash
+bash ./scripts/install-daily-backup-cron.sh
+```
+
+Default schedule:
+- every day at `02:00`
+
+Optional environment variables:
+
+```bash
+CRON_SCHEDULE="0 2 * * *"
+BACKUP_RETENTION_DAYS=30
+```
+
+### Admin-only backup API
+
+These endpoints require a valid admin JWT:
+
+- `GET /api/backups` : list available backup files
+- `GET /api/backups/:fileName/download` : download one backup file
+- `DELETE /api/backups/:fileName` : remove one backup file from the server
+
+Example with curl:
+
+```bash
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" https://api.dispatch.example.com/api/backups
+curl -L -H "Authorization: Bearer YOUR_ADMIN_TOKEN" -o latest-backup.sql.gz https://api.dispatch.example.com/api/backups/dnl-backup-2026-05-18_02-00-00.sql.gz/download
+curl -X DELETE -H "Authorization: Bearer YOUR_ADMIN_TOKEN" https://api.dispatch.example.com/api/backups/dnl-backup-2026-05-18_02-00-00.sql.gz
+```
+
+Important:
+- keep backups offsite as well if the VPS disk fails
+- test restore periodically instead of assuming dumps are valid
+- do not commit files from `backups/daily/`
+
 ## PostgreSQL
 
 PostgreSQL is possible, but it is a separate migration, not a container-only change. The backend currently depends on MySQL-specific behavior and query syntax in many places, including:

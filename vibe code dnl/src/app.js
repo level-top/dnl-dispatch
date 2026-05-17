@@ -11,6 +11,7 @@ const documentsRouter = require('./routes/documents');
 const driverDocumentsRouter = require('./routes/driverDocuments');
 const agreementsRouter = require('./routes/agreements');
 const agreementTemplateRouter = require('./routes/agreementTemplate');
+const backupsRouter = require('./routes/backups');
 const uploadsRouter = require('./routes/uploads');
 const path = require('path');
 const { requireAuth, requireRole } = require('./middleware/auth');
@@ -80,6 +81,9 @@ app.use('/api/assignments', assignmentsRouter);
 
 // Route for company details
 app.use('/api/company', companyDetailsRouter);
+
+// Admin-only backup management
+app.use('/api/backups', backupsRouter);
 
 // Route for documents
 app.use('/api', documentsRouter);

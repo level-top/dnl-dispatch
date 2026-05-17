@@ -6,6 +6,7 @@ ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
   chromium \
+  default-mysql-client \
   ca-certificates \
   fonts-liberation \
   libasound2 \
@@ -46,7 +47,7 @@ ENV PORT=5000
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_DISABLE_SANDBOX=1
 
-RUN mkdir -p /app/uploads
+RUN mkdir -p /app/uploads /app/backups/daily
 
 EXPOSE 5000
 CMD ["npm", "run", "start"]

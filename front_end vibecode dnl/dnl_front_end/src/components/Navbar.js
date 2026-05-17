@@ -74,6 +74,14 @@ function NavIcon({ kind, className = 'w-4 h-4' }) {
           <path d="M10 17h4" />
         </svg>
       );
+    case 'backups':
+      return (
+        <svg {...props}>
+          <path d="M12 3v9" />
+          <path d="m8 8 4 4 4-4" />
+          <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -188,6 +196,7 @@ export default function Navbar() {
   const canSeeUsers = isAdmin;
   const canSeeAssignments = isAdmin;
   const canSeeInvoices = isAdmin;
+  const canSeeBackups = isAdmin;
   const canSeeLoads = isAdmin || isDispatcher;
   const canSeeDrivers = isAdmin || isSalesAgent;
   const canSeeLoadManagement = isAdmin || isDispatcher;
@@ -241,6 +250,9 @@ export default function Navbar() {
         ) : null}
         {canSeeInvoices ? (
           <AppNavLink href="/invoices" icon="invoices" pathname={pathname}>Invoices</AppNavLink>
+        ) : null}
+        {canSeeBackups ? (
+          <AppNavLink href="/backups" icon="backups" pathname={pathname}>Backups</AppNavLink>
         ) : null}
 
         {isAuthed ? (

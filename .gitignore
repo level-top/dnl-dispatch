@@ -8,6 +8,10 @@ coverage/
 
 # Local backups
 _backup_frontend_git/
+/backups/*
+!/backups/daily/
+/backups/daily/*
+!/backups/daily/.gitkeep
 
 # Env
 .env*

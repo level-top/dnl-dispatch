@@ -41,6 +41,7 @@ services:
       PUPPETEER_DISABLE_SANDBOX: "1"
     volumes:
       - uploads_data:/app/uploads
+      - ./backups:/app/backups
     expose:
       - "5000"
 
