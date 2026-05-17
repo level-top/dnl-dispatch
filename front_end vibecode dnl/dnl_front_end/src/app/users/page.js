@@ -2,6 +2,15 @@
 import { useEffect, useState } from "react";
 
 import { getUsers, createUser, updateUser, deleteUser } from "../../utils/api";
+import {
+  ActionButton,
+  DataBadge,
+  DataTable,
+  DeleteIcon,
+  EditIcon,
+  HeaderCell,
+  TableEmptyState,
+} from "../../components/DataTable";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -32,7 +41,7 @@ export default function UsersPage() {
 
   const handleChange = e => {
     const { name, value } = e.target;
-    
+
     if (name === "contactNumber") {
       // Only allow numbers, +, -, (), and spaces for phone
       const phoneValue = value.replace(/[^\d\s\-+()]/g, '');
@@ -44,7 +53,7 @@ export default function UsersPage() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    
+
     // Validation
     if (!form.name?.trim() || form.name.length < 2) {
       setError("Name must be at least 2 characters");
@@ -72,7 +81,7 @@ export default function UsersPage() {
     }
 
     // Check for uniqueness (skip if editing the same user)
-    const duplicateUsername = users.find(u => 
+    const duplicateUsername = users.find(u =>
       u.userName === form.userName && u.id !== editingId
     );
     if (duplicateUsername) {
@@ -80,7 +89,7 @@ export default function UsersPage() {
       return;
     }
 
-    const duplicateEmail = users.find(u => 
+    const duplicateEmail = users.find(u =>
       u.email === form.email && u.id !== editingId
     );
     if (duplicateEmail) {
@@ -88,7 +97,7 @@ export default function UsersPage() {
       return;
     }
 
-    const duplicatePhone = users.find(u => 
+    const duplicatePhone = users.find(u =>
       u.contactNumber === form.contactNumber && u.id !== editingId
     );
     if (duplicatePhone) {
@@ -189,37 +198,39 @@ export default function UsersPage() {
           </div>
         </form>
         {error && <div className="text-red-600 mb-2 text-sm font-medium">{error}</div>}
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Username</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Password</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Role</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact Number</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+        <DataTable>
+          <thead>
+            <tr>
+              <HeaderCell>Name</HeaderCell>
+              <HeaderCell>Username</HeaderCell>
+              <HeaderCell>Password</HeaderCell>
+              <HeaderCell>Role</HeaderCell>
+              <HeaderCell>Contact Number</HeaderCell>
+              <HeaderCell>Email</HeaderCell>
+              <HeaderCell>Actions</HeaderCell>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {users.length === 0 ? (
+              <TableEmptyState colSpan={7} title="No users found" description="Create a user account to assign dispatch and admin access." />
+            ) : users.map(user => (
+              <tr key={user.id} className="text-slate-900 transition hover:bg-sky-50/70">
+                <td className="px-4 py-3 text-sm whitespace-nowrap font-semibold text-slate-900">{user.name}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{user.userName}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{user.password}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap"><DataBadge tone={String(user.role).toLowerCase() === "admin" ? "violet" : "info"}>{user.role}</DataBadge></td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{user.contactNumber || "-"}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{user.email || "-"}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap">
+                  <div className="flex gap-2">
+                    <ActionButton variant="primary" icon={<EditIcon />} onClick={() => handleEdit(user)}>Edit</ActionButton>
+                    <ActionButton variant="danger" icon={<DeleteIcon />} onClick={() => handleDelete(user.id)}>Delete</ActionButton>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {users.map(user => (
-                <tr key={user.id} className="hover:bg-blue-50 transition text-black">
-                  <td className="px-4 py-2 whitespace-nowrap">{user.name}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{user.userName}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{user.password}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{user.role}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{user.contactNumber}</td>
-                  <td className="px-4 py-2 whitespace-nowrap ">{user.email}</td>
-                  <td className="px-4 py-2 whitespace-nowrap flex gap-2">
-                    <button className="bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium px-3 py-1 rounded shadow-sm transition" onClick={() => handleEdit(user)}>Edit</button>
-                    <button className="bg-red-100 hover:bg-red-200 text-red-700 font-medium px-3 py-1 rounded shadow-sm transition" onClick={() => handleDelete(user.id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </DataTable>
       </div>
     </div>
   );

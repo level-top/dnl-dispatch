@@ -4,10 +4,105 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { clearStoredAuth, getStoredUser, getCompanyDetails } from '../utils/api';
+import { clearStoredAuth, getStoredUser } from '../utils/api';
+
+const DEFAULT_LOGO_SRC = '/DNL_logo.png';
+
+function NavIcon({ kind, className = 'w-4 h-4' }) {
+  const props = {
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.9,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    className,
+    'aria-hidden': 'true',
+  };
+
+  switch (kind) {
+    case 'users':
+      return (
+        <svg {...props}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" />
+          <circle cx="9.5" cy="7" r="3" />
+          <path d="M20 8v6" />
+          <path d="M23 11h-6" />
+        </svg>
+      );
+    case 'loads':
+      return (
+        <svg {...props}>
+          <path d="M3 7h11v8H3z" />
+          <path d="M14 10h3l4 3v2h-7z" />
+          <circle cx="7.5" cy="17.5" r="1.5" />
+          <circle cx="18.5" cy="17.5" r="1.5" />
+        </svg>
+      );
+    case 'drivers':
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="7" r="3.5" />
+          <path d="M5 20a7 7 0 0 1 14 0" />
+        </svg>
+      );
+    case 'assignments':
+      return (
+        <svg {...props}>
+          <path d="M9 5h11" />
+          <path d="M9 12h11" />
+          <path d="M9 19h11" />
+          <path d="M4 5h.01" />
+          <path d="M4 12h.01" />
+          <path d="M4 19h.01" />
+        </svg>
+      );
+    case 'management':
+      return (
+        <svg {...props}>
+          <path d="M12 3v18" />
+          <path d="M17 8l-5-5-5 5" />
+          <path d="M7 16l5 5 5-5" />
+        </svg>
+      );
+    case 'invoices':
+      return (
+        <svg {...props}>
+          <path d="M7 3h8l4 4v14H7z" />
+          <path d="M15 3v5h5" />
+          <path d="M10 13h6" />
+          <path d="M10 17h4" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
+function isRouteActive(pathname, href) {
+  if (!pathname) return false;
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function AppNavLink({ href, children, icon, pathname }) {
+  const active = isRouteActive(pathname, href);
+
+  return (
+    <Link
+      href={href}
+      className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${active
+        ? 'bg-blue-600 text-white shadow-[0_12px_28px_-18px_rgba(37,99,235,0.95)]'
+        : 'text-slate-600 hover:bg-white hover:text-slate-900'
+        }`}
+    >
+      <NavIcon kind={icon} className="w-4 h-4" />
+      <span>{children}</span>
+    </Link>
+  );
+}
 
 export default function Navbar() {
-  const [logoUrl, setLogoUrl] = useState("");
   const [me, setMe] = useState(() => getStoredUser());
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef(null);
@@ -15,23 +110,6 @@ export default function Navbar() {
   const router = useRouter();
 
   const isPublicSigningRoute = typeof pathname === 'string' && pathname.startsWith('/sign/');
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const companies = await getCompanyDetails();
-        const firstCompany = Array.isArray(companies) ? companies[0] : null;
-        if (!cancelled) setLogoUrl(firstCompany?.LogoURL || "");
-      } catch {
-        // Ignore errors; fallback logo will be used.
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   useEffect(() => {
     // Keep navbar in sync after login/logout and on navigation.
@@ -77,24 +155,26 @@ export default function Navbar() {
 
   if (isPublicSigningRoute) {
     return (
-      <nav className="bg-white/90 backdrop-blur sticky top-0 z-50 shadow-lg rounded-b-2xl mx-auto max-w-7xl mt-2 mb-6 px-4 py-3 flex items-center justify-between border-b border-gray-200">
+      <nav className="sticky top-0 z-50 mx-auto mt-3 mb-6 flex max-w-7xl items-center justify-between rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.78)] px-5 py-3 shadow-[0_22px_60px_-36px_rgba(15,23,42,0.45)] backdrop-blur-xl">
         <div className="flex items-center gap-3" aria-label="Drive Now Logistics">
           <span
-            className={`${logoUrl ? "bg-white" : "bg-blue-900"} rounded-full w-9 h-9 flex items-center justify-center shadow-md border border-gray-200 overflow-hidden`}
+            className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50 shadow-md"
           >
             <Image
-              src={logoUrl || "/DNL_logo.png"}
+              src={DEFAULT_LOGO_SRC}
               alt="Company Logo"
-              width={32}
-              height={32}
-              className="w-8 h-8 object-contain"
+              width={42}
+              height={42}
+              className="w-10 h-10 object-contain"
               unoptimized
-              onError={() => setLogoUrl("")}
             />
           </span>
-          <span className="font-semibold text-lg text-blue-900 tracking-wide">Drive Now Logistics</span>
+          <div>
+            <div className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-blue-600">Dispatch OS</div>
+            <span className="font-semibold text-lg text-slate-900 tracking-wide">Drive Now Logistics</span>
+          </div>
         </div>
-        <div className="text-sm font-medium text-gray-600">Agreement Signing</div>
+        <div className="rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-sm font-medium text-slate-600">Agreement Signing</div>
       </nav>
     );
   }
@@ -124,41 +204,43 @@ export default function Navbar() {
   const displayRole = String(me?.role || '').toLowerCase() || 'user';
 
   return (
-    <nav className="bg-white/90 backdrop-blur sticky top-0 z-50 shadow-lg rounded-b-2xl mx-auto max-w-7xl mt-2 mb-6 px-4 py-3 flex items-center justify-between border-b border-gray-200">
+    <nav className="sticky top-0 z-50 mx-auto mt-3 mb-6 flex max-w-7xl items-center justify-between rounded-[24px] border border-white/70 bg-[rgba(255,255,255,0.78)] px-5 py-3 shadow-[0_22px_60px_-36px_rgba(15,23,42,0.45)] backdrop-blur-xl">
       <Link href="/" className="flex items-center gap-3" aria-label="Home">
         <span
-          className={`${logoUrl ? "bg-white" : "bg-blue-900"} rounded-full w-9 h-9 flex items-center justify-center shadow-md border border-gray-200 overflow-hidden`}
+          className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-white to-blue-50 shadow-md"
         >
           <Image
-            src={logoUrl || "/DNL_logo.png"}
+            src={DEFAULT_LOGO_SRC}
             alt="Company Logo"
-            width={32}
-            height={32}
-            className="w-8 h-8 object-contain"
-			unoptimized
-			onError={() => setLogoUrl("")}
+            width={42}
+            height={42}
+            className="w-10 h-10 object-contain"
+            unoptimized
           />
         </span>
-        <span className="font-semibold text-lg text-blue-900 tracking-wide">Drive Now Logistics</span>
+        <div>
+          <div className="text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-blue-600">Dispatch OS</div>
+          <span className="font-semibold text-lg text-slate-900 tracking-wide">Drive Now Logistics</span>
+        </div>
       </Link>
-      <div className="flex items-center gap-2 md:gap-4">
+      <div className="flex items-center gap-2 md:gap-3">
         {canSeeUsers ? (
-          <Link href="/users" className="px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">Users</Link>
+          <AppNavLink href="/users" icon="users" pathname={pathname}>Users</AppNavLink>
         ) : null}
         {canSeeLoads ? (
-          <Link href="/loads" className="px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">Loads</Link>
+          <AppNavLink href="/loads" icon="loads" pathname={pathname}>Loads</AppNavLink>
         ) : null}
         {canSeeDrivers ? (
-          <Link href="/drivers" className="px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">Drivers</Link>
+          <AppNavLink href="/drivers" icon="drivers" pathname={pathname}>Drivers</AppNavLink>
         ) : null}
         {canSeeAssignments ? (
-          <Link href="/assignments" className="px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">Assignments</Link>
+          <AppNavLink href="/assignments" icon="assignments" pathname={pathname}>Assignments</AppNavLink>
         ) : null}
         {canSeeLoadManagement ? (
-          <Link href="/load_managment" className="px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">Load Management</Link>
+          <AppNavLink href="/load_managment" icon="management" pathname={pathname}>Load Management</AppNavLink>
         ) : null}
         {canSeeInvoices ? (
-          <Link href="/invoices" className="px-3 py-2 rounded-lg font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">Invoices</Link>
+          <AppNavLink href="/invoices" icon="invoices" pathname={pathname}>Invoices</AppNavLink>
         ) : null}
 
         {isAuthed ? (
@@ -171,7 +253,7 @@ export default function Navbar() {
               onClick={() => setUserMenuOpen((v) => !v)}
               aria-haspopup="menu"
               aria-expanded={userMenuOpen ? 'true' : 'false'}
-              className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 bg-white text-gray-700 shadow-sm"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-200 hover:text-blue-700"
               title="Account"
             >
               <span className="sr-only">Open user menu</span>
@@ -194,12 +276,12 @@ export default function Navbar() {
               <div
                 role="menu"
                 aria-label="User menu"
-                className="absolute right-0 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-xl overflow-hidden"
+                className="absolute right-0 mt-2 w-64 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_24px_60px_-40px_rgba(15,23,42,0.6)]"
               >
-                <div className="px-4 py-3 bg-gray-50">
-                  <div className="text-sm font-semibold text-gray-900 truncate">{displayName}</div>
-                  <div className="text-xs text-gray-600 truncate">{displayUserName ? `@${displayUserName}` : ''}</div>
-                  <div className="mt-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-4 py-3">
+                  <div className="truncate text-sm font-semibold text-slate-900">{displayName}</div>
+                  <div className="truncate text-xs text-slate-500">{displayUserName ? `@${displayUserName}` : ''}</div>
+                  <div className="mt-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-800">
                     {displayRole}
                   </div>
                 </div>
@@ -209,7 +291,7 @@ export default function Navbar() {
                     type="button"
                     onClick={onLogout}
                     role="menuitem"
-                    className="w-full text-left px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-red-50 hover:text-red-700 transition"
+                    className="w-full rounded-xl px-3 py-2 text-left font-semibold text-slate-700 hover:bg-red-50 hover:text-red-700"
                   >
                     Logout
                   </button>
@@ -218,7 +300,7 @@ export default function Navbar() {
             ) : null}
           </div>
         ) : (
-          <Link href="/login" className="px-3 py-2 rounded-lg font-semibold text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition border border-gray-200">
+          <Link href="/login" className="rounded-xl border border-slate-200 px-3 py-2 font-semibold text-slate-700 hover:bg-white hover:text-blue-700">
             Login
           </Link>
         )}

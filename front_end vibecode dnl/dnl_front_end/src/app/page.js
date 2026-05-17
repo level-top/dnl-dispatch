@@ -86,6 +86,74 @@ function getCompanyRevenue(load, driver) {
   return 0;
 }
 
+function DashboardIcon({ kind, className = "h-5 w-5" }) {
+  const props = {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.9,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className,
+    "aria-hidden": "true",
+  };
+
+  switch (kind) {
+    case "overview":
+      return (
+        <svg {...props}>
+          <path d="M4 19h16" />
+          <path d="M7 15V9" />
+          <path d="M12 15V5" />
+          <path d="M17 15v-3" />
+        </svg>
+      );
+    case "orders":
+      return (
+        <svg {...props}>
+          <path d="M3 7h11v8H3z" />
+          <path d="M14 10h3l4 3v2h-7z" />
+          <circle cx="7.5" cy="17.5" r="1.5" />
+          <circle cx="18.5" cy="17.5" r="1.5" />
+        </svg>
+      );
+    case "revenue":
+      return (
+        <svg {...props}>
+          <path d="M12 2v20" />
+          <path d="M17 6.5c0-1.9-2.2-3.5-5-3.5s-5 1.6-5 3.5 2.2 3.5 5 3.5 5 1.6 5 3.5-2.2 3.5-5 3.5-5-1.6-5-3.5" />
+        </svg>
+      );
+    case "invoice":
+      return (
+        <svg {...props}>
+          <path d="M7 3h8l4 4v14H7z" />
+          <path d="M15 3v5h5" />
+          <path d="M10 13h6" />
+          <path d="M10 17h4" />
+        </svg>
+      );
+    case "payment":
+      return (
+        <svg {...props}>
+          <path d="M3 8h18" />
+          <path d="M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" />
+          <path d="M16 15h.01" />
+          <path d="M7 15h3" />
+        </svg>
+      );
+    case "drivers":
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="7" r="3.5" />
+          <path d="M5 20a7 7 0 0 1 14 0" />
+        </svg>
+      );
+    default:
+      return null;
+  }
+}
+
 export default function Home() {
   const [me] = useState(() => getStoredUser());
   const role = String(me?.role || "").toLowerCase();
@@ -538,120 +606,212 @@ export default function Home() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-white rounded-xl border border-gray-200 shadow-lg px-3 py-2 flex items-center gap-3">
-            <span
-              className={`${companyLogoUrl ? "bg-white" : "bg-blue-900"} rounded-full w-11 h-11 flex items-center justify-center border border-gray-200 overflow-hidden`}
-            >
-              <Image
-                src={companyLogoUrl || "/DNL_logo.png"}
-                alt="Company Logo"
-                width={40}
-                height={40}
-                className="w-10 h-10 object-contain"
-                unoptimized
-                onError={() => setCompanyLogoUrl("")}
-              />
-            </span>
-            <div>
-              <div className="text-sm text-gray-500">Dashboard</div>
-              <div className="text-lg font-bold text-gray-900">{companyName}</div>
+    <div className="space-y-8">
+      <section className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(239,246,255,0.86))] p-6 shadow-[0_32px_90px_-60px_rgba(15,23,42,0.5)]">
+        <div className="absolute inset-y-0 right-0 w-56 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_68%)]" />
+        <div className="relative flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <span className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-[22px] border border-blue-100 bg-white shadow-md">
+                <Image
+                  src={companyLogoUrl || "/DNL_logo.png"}
+                  alt="Company Logo"
+                  width={58}
+                  height={58}
+                  className="h-14 w-14 object-contain"
+                  unoptimized
+                  onError={() => setCompanyLogoUrl("")}
+                />
+              </span>
+
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-blue-700">
+                  <DashboardIcon kind="overview" className="h-3.5 w-3.5" />
+                  Operations Dashboard
+                </div>
+                <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">{companyName}</h1>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 md:text-base">
+                  A unified control center for orders, revenue, invoicing, and driver operations.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Reporting Window</div>
+                <div className="mt-2 text-lg font-semibold text-slate-900">{period.label}</div>
+                <div className="text-sm text-slate-500">{toYMD(range.start)} to {toYMD(range.end)}</div>
+              </div>
+              <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Orders Snapshot</div>
+                <div className="mt-2 text-lg font-semibold text-slate-900">{kpis.totalLoads} active records</div>
+                <div className="text-sm text-slate-500">Delivered: {kpis.deliveredCount} • Active drivers: {activeDriversCount}</div>
+              </div>
+              <div className="rounded-2xl border border-white/80 bg-white/75 p-4 shadow-sm backdrop-blur">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Cash Position</div>
+                <div className="mt-2 text-lg font-semibold text-slate-900">{formatMoney(kpis.receivedTotal)}</div>
+                <div className="text-sm text-slate-500">Receivables open: {formatMoney(kpis.receivablesTotal)}</div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex gap-2 flex-wrap">
-          {PERIODS.map((p) => (
-            <button
-              key={p.key}
-              onClick={() => setPeriodKey(p.key)}
-              className={`px-4 py-2 rounded-lg font-medium transition border ${
-                periodKey === p.key
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+          <div className="flex flex-wrap gap-2 rounded-2xl border border-white/70 bg-white/75 p-2 shadow-sm backdrop-blur">
+            {PERIODS.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => setPeriodKey(p.key)}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${periodKey === p.key
+                  ? "bg-blue-600 text-white shadow-[0_18px_35px_-20px_rgba(37,99,235,0.95)]"
+                  : "bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                  }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
       {error && (
-        <div className="bg-red-100 text-red-700 p-3 rounded-lg">{error}</div>
+        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-sm">{error}</div>
       )}
 
       {isSalesAgent ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-            <div className="text-sm text-gray-500">Active Drivers</div>
-            <div className="text-3xl font-extrabold text-gray-900 mt-1">{activeDriversCount}</div>
-            <div className="text-sm text-gray-500 mt-2">Read-only</div>
+          <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium text-slate-500">Active Drivers</div>
+                <div className="mt-2 text-3xl font-extrabold text-slate-950">{activeDriversCount}</div>
+                <div className="mt-2 text-sm text-slate-500">Read-only</div>
+              </div>
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                <DashboardIcon kind="drivers" />
+              </span>
+            </div>
           </div>
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-            <div className="text-sm text-gray-500">Payments & Receivables</div>
-            <div className="text-sm text-gray-700 mt-2">Received: <span className="font-semibold">{formatMoney(kpis.receivedTotal)}</span></div>
-            <div className="text-sm text-gray-700">Receivables: <span className="font-semibold">{formatMoney(kpis.receivablesTotal)}</span></div>
-            <div className="text-sm text-gray-500 mt-2">Read-only</div>
+          <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium text-slate-500">Payments & Receivables</div>
+                <div className="mt-3 space-y-1 text-sm text-slate-600">
+                  <div>Received: <span className="font-semibold text-slate-900">{formatMoney(kpis.receivedTotal)}</span></div>
+                  <div>Receivables: <span className="font-semibold text-slate-900">{formatMoney(kpis.receivablesTotal)}</span></div>
+                </div>
+                <div className="mt-2 text-sm text-slate-500">Read-only</div>
+              </div>
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                <DashboardIcon kind="payment" />
+              </span>
+            </div>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-            <div className="text-sm text-gray-500">Orders</div>
-            <div className="text-3xl font-extrabold text-gray-900 mt-1">{kpis.totalLoads}</div>
-            <div className="text-sm text-gray-500 mt-2">Delivered: {kpis.deliveredCount}</div>
+          <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <div className="text-sm font-medium text-slate-500">Orders</div>
+                <div className="mt-2 text-3xl font-extrabold text-slate-950">{kpis.totalLoads}</div>
+                <div className="mt-2 text-sm text-slate-500">Delivered: {kpis.deliveredCount}</div>
+              </div>
+              <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+                <DashboardIcon kind="orders" />
+              </span>
+            </div>
           </div>
           {isDispatcher ? (
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-              <div className="text-sm text-gray-500">Assigned Drivers</div>
-              <div className="text-3xl font-extrabold text-gray-900 mt-1">{drivers.length}</div>
-              <div className="text-sm text-gray-500 mt-2">Based on your assignments</div>
+            <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium text-slate-500">Assigned Drivers</div>
+                  <div className="mt-2 text-3xl font-extrabold text-slate-950">{drivers.length}</div>
+                  <div className="mt-2 text-sm text-slate-500">Based on your assignments</div>
+                </div>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                  <DashboardIcon kind="drivers" />
+                </span>
+              </div>
             </div>
           ) : (
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-              <div className="text-sm text-gray-500">Company Revenue</div>
-              <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(kpis.companyRevenue)}</div>
-              <div className="text-sm text-gray-500 mt-2">Loads: {kpis.totalLoads || 0}</div>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium text-slate-500">Company Revenue</div>
+                  <div className="mt-2 text-3xl font-extrabold text-slate-950">{formatMoney(kpis.companyRevenue)}</div>
+                  <div className="mt-2 text-sm text-slate-500">Loads: {kpis.totalLoads || 0}</div>
+                </div>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700">
+                  <DashboardIcon kind="revenue" />
+                </span>
+              </div>
             </div>
           )}
 
           {isDispatcher ? (
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-              <div className="text-sm text-gray-500">In-Progress Loads</div>
-              <div className="text-3xl font-extrabold text-gray-900 mt-1">
-                {loadsInRangeAll.filter((l) => {
-                  const s = String(l.loadStatus || "").toLowerCase();
-                  return s === "booked" || s === "pickedup";
-                }).length}
+            <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium text-slate-500">In-Progress Loads</div>
+                  <div className="mt-2 text-3xl font-extrabold text-slate-950">
+                    {loadsInRangeAll.filter((l) => {
+                      const s = String(l.loadStatus || "").toLowerCase();
+                      return s === "booked" || s === "pickedup";
+                    }).length}
+                  </div>
+                  <div className="mt-2 text-sm text-slate-500">Booked + Picked Up</div>
+                </div>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                  <DashboardIcon kind="overview" />
+                </span>
               </div>
-              <div className="text-sm text-gray-500 mt-2">Booked + Picked Up</div>
             </div>
           ) : (
             <Link
               href="/invoices"
-              className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
+              className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)] transition hover:-translate-y-0.5 hover:bg-white"
               title="Open invoices"
             >
-              <div className="text-sm text-gray-500">Invoices</div>
-              <div className="text-3xl font-extrabold text-gray-900 mt-1">{kpis.invoiceCount}</div>
-              <div className="text-sm text-gray-500 mt-2">Total: {formatMoney(kpis.invoiceTotal)}</div>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium text-slate-500">Invoices</div>
+                  <div className="mt-2 text-3xl font-extrabold text-slate-950">{kpis.invoiceCount}</div>
+                  <div className="mt-2 text-sm text-slate-500">Total: {formatMoney(kpis.invoiceTotal)}</div>
+                </div>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
+                  <DashboardIcon kind="invoice" />
+                </span>
+              </div>
             </Link>
           )}
 
           {isDispatcher ? (
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-              <div className="text-sm text-gray-500">Dispatcher</div>
-              <div className="text-xl font-extrabold text-gray-900 mt-2 truncate">{String(me?.name || me?.userName || "You")}</div>
-              <div className="text-sm text-gray-500 mt-2">Dashboard scoped to your loads</div>
+            <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium text-slate-500">Dispatcher</div>
+                  <div className="mt-2 truncate text-xl font-extrabold text-slate-950">{String(me?.name || me?.userName || "You")}</div>
+                  <div className="mt-2 text-sm text-slate-500">Dashboard scoped to your loads</div>
+                </div>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+                  <DashboardIcon kind="drivers" />
+                </span>
+              </div>
             </div>
           ) : (
-            <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-              <div className="text-sm text-gray-500">Payments & Receivables</div>
-              <div className="text-sm text-gray-700 mt-2">Received: <span className="font-semibold">{formatMoney(kpis.receivedTotal)}</span></div>
-              <div className="text-sm text-gray-700">Receivables: <span className="font-semibold">{formatMoney(kpis.receivablesTotal)}</span></div>
+            <div className="rounded-[24px] border border-slate-200/80 bg-white/90 p-5 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.45)]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-sm font-medium text-slate-500">Payments & Receivables</div>
+                  <div className="mt-3 space-y-1 text-sm text-slate-600">
+                    <div>Received: <span className="font-semibold text-slate-900">{formatMoney(kpis.receivedTotal)}</span></div>
+                    <div>Receivables: <span className="font-semibold text-slate-900">{formatMoney(kpis.receivablesTotal)}</span></div>
+                  </div>
+                </div>
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                  <DashboardIcon kind="payment" />
+                </span>
+              </div>
             </div>
           )}
         </div>
@@ -675,120 +835,120 @@ export default function Home() {
       ) : null}
 
       {!isDispatcher && !isSalesAgent ? (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Link
-          href={invoicesHref("pending")}
-          className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
-          title="Open pending invoices"
-        >
-          <div className="text-sm text-gray-500">Receivables</div>
-          <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(kpis.receivablesTotal)}</div>
-          <div className="text-sm text-gray-500 mt-2">Open invoices: {kpis.openInvoicesCount} (Pending + Partial)</div>
-        </Link>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Link
+            href={invoicesHref("pending")}
+            className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
+            title="Open pending invoices"
+          >
+            <div className="text-sm text-gray-500">Receivables</div>
+            <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(kpis.receivablesTotal)}</div>
+            <div className="text-sm text-gray-500 mt-2">Open invoices: {kpis.openInvoicesCount} (Pending + Partial)</div>
+          </Link>
 
-        <Link
-          href={invoicesHref("paid")}
-          className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
-          title="Open paid invoices"
-        >
-          <div className="text-sm text-gray-500">Payments Received</div>
-          <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(kpis.receivedTotal)}</div>
-          <div className="text-sm text-gray-500 mt-2">Invoices w/ payments: {kpis.invoicesWithPaymentsCount}</div>
-        </Link>
+          <Link
+            href={invoicesHref("paid")}
+            className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
+            title="Open paid invoices"
+          >
+            <div className="text-sm text-gray-500">Payments Received</div>
+            <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(kpis.receivedTotal)}</div>
+            <div className="text-sm text-gray-500 mt-2">Invoices w/ payments: {kpis.invoicesWithPaymentsCount}</div>
+          </Link>
 
-        <Link
-          href={loadManagementHref({ status: "delivered", payment: "unpaid" })}
-          className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
-          title="Open delivered + unpaid loads"
-        >
-          <div className="text-sm text-gray-500">Unbilled</div>
-          <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.deliveredNotInvoiced.amount)}</div>
-          <div className="text-sm text-gray-500 mt-2">Delivered (not invoiced): {cashPipelineReport.deliveredNotInvoiced.count}</div>
-        </Link>
+          <Link
+            href={loadManagementHref({ status: "delivered", payment: "unpaid" })}
+            className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
+            title="Open delivered + unpaid loads"
+          >
+            <div className="text-sm text-gray-500">Unbilled</div>
+            <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.deliveredNotInvoiced.amount)}</div>
+            <div className="text-sm text-gray-500 mt-2">Delivered (not invoiced): {cashPipelineReport.deliveredNotInvoiced.count}</div>
+          </Link>
 
-        <Link
-          href={loadManagementHref({ status: "booked" })}
-          className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
-          title="Open booked loads"
-        >
-          <div className="text-sm text-gray-500">Pipeline Value</div>
-          <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.booked.amount)}</div>
-          <div className="text-sm text-gray-500 mt-2">
-            Booked: {orderInvoiceSummary.booked} • Picked Up: {orderInvoiceSummary.pickedUp} • Issue: {orderInvoiceSummary.issue}
-          </div>
-        </Link>
+          <Link
+            href={loadManagementHref({ status: "booked" })}
+            className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
+            title="Open booked loads"
+          >
+            <div className="text-sm text-gray-500">Pipeline Value</div>
+            <div className="text-3xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.booked.amount)}</div>
+            <div className="text-sm text-gray-500 mt-2">
+              Booked: {orderInvoiceSummary.booked} • Picked Up: {orderInvoiceSummary.pickedUp} • Issue: {orderInvoiceSummary.issue}
+            </div>
+          </Link>
 
-        <Link
-          href="/drivers#drivers-list"
-          className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
-        >
-          <div className="text-sm text-gray-500">Active Drivers</div>
-          <div className="text-3xl font-extrabold text-gray-900 mt-1">{activeDriversCount}</div>
-          <div className="text-sm text-gray-500 mt-2">Click to view list</div>
-        </Link>
-      </div>
+          <Link
+            href="/drivers#drivers-list"
+            className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 hover:bg-gray-50 transition"
+          >
+            <div className="text-sm text-gray-500">Active Drivers</div>
+            <div className="text-3xl font-extrabold text-gray-900 mt-1">{activeDriversCount}</div>
+            <div className="text-sm text-gray-500 mt-2">Click to view list</div>
+          </Link>
+        </div>
       ) : null}
 
       {!isSalesAgent ? (
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-          <div>
-            <div className="text-lg font-bold text-gray-900">Dashboard Filters</div>
-            <div className="text-sm text-gray-500">Filter the dashboard by driver/dispatcher</div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setFilterDriver("");
-              setFilterDispatcher("");
-            }}
-            className="px-4 py-2 rounded-lg font-medium transition border bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-          >
-            Clear Filters
-          </button>
-        </div>
-
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="homeFilterDriver" className="block mb-1 font-medium text-gray-700">Driver</label>
-            <select
-              id="homeFilterDriver"
-              value={filterDriver}
-              onChange={(e) => setFilterDriver(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2"
-            >
-              <option value="">All Drivers</option>
-              {drivers.map((d) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {!isDispatcher ? (
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-3">
             <div>
-              <label htmlFor="homeFilterDispatcher" className="block mb-1 font-medium text-gray-700">Dispatcher</label>
+              <div className="text-lg font-bold text-gray-900">Dashboard Filters</div>
+              <div className="text-sm text-gray-500">Filter the dashboard by driver/dispatcher</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setFilterDriver("");
+                setFilterDispatcher("");
+              }}
+              className="px-4 py-2 rounded-lg font-medium transition border bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="homeFilterDriver" className="block mb-1 font-medium text-gray-700">Driver</label>
               <select
-                id="homeFilterDispatcher"
-                value={filterDispatcher}
-                onChange={(e) => setFilterDispatcher(e.target.value)}
+                id="homeFilterDriver"
+                value={filterDriver}
+                onChange={(e) => setFilterDriver(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2"
               >
-                <option value="">All Dispatchers</option>
-                {dispatchers.map((u) => (
-                  <option key={u.id} value={u.id}>{u.name}</option>
+                <option value="">All Drivers</option>
+                {drivers.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
                 ))}
               </select>
             </div>
-          ) : (
-            <div>
-              <label className="block mb-1 font-medium text-gray-700">Dispatcher</label>
-              <div className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50 text-gray-700">
-                {String(me?.name || me?.userName || "You")}
+
+            {!isDispatcher ? (
+              <div>
+                <label htmlFor="homeFilterDispatcher" className="block mb-1 font-medium text-gray-700">Dispatcher</label>
+                <select
+                  id="homeFilterDispatcher"
+                  value={filterDispatcher}
+                  onChange={(e) => setFilterDispatcher(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2"
+                >
+                  <option value="">All Dispatchers</option>
+                  {dispatchers.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                  ))}
+                </select>
               </div>
-            </div>
-          )}
+            ) : (
+              <div>
+                <label className="block mb-1 font-medium text-gray-700">Dispatcher</label>
+                <div className="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-50 text-gray-700">
+                  {String(me?.name || me?.userName || "You")}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
       ) : null}
 
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
@@ -939,84 +1099,84 @@ export default function Home() {
 
       {!isSalesAgent ? (
 
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2 mb-4">
-          <div>
-            <div className="text-lg font-bold text-gray-900">Cash & Pipeline Report</div>
-            <div className="text-sm text-gray-500">{period.label} summary (received, receivables, pipeline)</div>
+        <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-2 mb-4">
+            <div>
+              <div className="text-lg font-bold text-gray-900">Cash & Pipeline Report</div>
+              <div className="text-sm text-gray-500">{period.label} summary (received, receivables, pipeline)</div>
+            </div>
+            <div className="text-sm text-gray-500">{toYMD(range.start)} → {toYMD(range.end)}</div>
           </div>
-          <div className="text-sm text-gray-500">{toYMD(range.start)} → {toYMD(range.end)}</div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
-          {isDispatcher ? (
-            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 opacity-80 cursor-not-allowed" title="Invoice pages are disabled for dispatcher">
-              <div className="text-sm text-gray-500">Paid Invoices (Received)</div>
-              <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.paidInvoices.amount)}</div>
-              <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.paidInvoices.count} • Read-only</div>
-            </div>
-          ) : (
-            <Link
-              href={invoicesHref("paid")}
-              className="rounded-lg border border-gray-100 bg-gray-50 p-4 hover:bg-gray-100 transition"
-            >
-              <div className="text-sm text-gray-500">Paid Invoices (Received)</div>
-              <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.paidInvoices.amount)}</div>
-              <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.paidInvoices.count}</div>
-            </Link>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            {isDispatcher ? (
+              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 opacity-80 cursor-not-allowed" title="Invoice pages are disabled for dispatcher">
+                <div className="text-sm text-gray-500">Paid Invoices (Received)</div>
+                <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.paidInvoices.amount)}</div>
+                <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.paidInvoices.count} • Read-only</div>
+              </div>
+            ) : (
+              <Link
+                href={invoicesHref("paid")}
+                className="rounded-lg border border-gray-100 bg-gray-50 p-4 hover:bg-gray-100 transition"
+              >
+                <div className="text-sm text-gray-500">Paid Invoices (Received)</div>
+                <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.paidInvoices.amount)}</div>
+                <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.paidInvoices.count}</div>
+              </Link>
+            )}
 
-          {isDispatcher ? (
-            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 opacity-80 cursor-not-allowed" title="Invoice pages are disabled for dispatcher">
-              <div className="text-sm text-gray-500">Pending Invoices (Receivables)</div>
-              <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.pendingInvoices.amount)}</div>
-              <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.pendingInvoices.count} • Read-only</div>
-            </div>
-          ) : (
-            <Link
-              href={invoicesHref("pending")}
-              className="rounded-lg border border-gray-100 bg-gray-50 p-4 hover:bg-gray-100 transition"
-            >
-              <div className="text-sm text-gray-500">Pending Invoices (Receivables)</div>
-              <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.pendingInvoices.amount)}</div>
-              <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.pendingInvoices.count}</div>
-            </Link>
-          )}
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
-            <div className="text-sm text-gray-500">Delivered (Not Invoiced)</div>
+            {isDispatcher ? (
+              <div className="rounded-lg border border-gray-100 bg-gray-50 p-4 opacity-80 cursor-not-allowed" title="Invoice pages are disabled for dispatcher">
+                <div className="text-sm text-gray-500">Pending Invoices (Receivables)</div>
+                <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.pendingInvoices.amount)}</div>
+                <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.pendingInvoices.count} • Read-only</div>
+              </div>
+            ) : (
+              <Link
+                href={invoicesHref("pending")}
+                className="rounded-lg border border-gray-100 bg-gray-50 p-4 hover:bg-gray-100 transition"
+              >
+                <div className="text-sm text-gray-500">Pending Invoices (Receivables)</div>
+                <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.pendingInvoices.amount)}</div>
+                <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.pendingInvoices.count}</div>
+              </Link>
+            )}
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+              <div className="text-sm text-gray-500">Delivered (Not Invoiced)</div>
               <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.deliveredNotInvoiced.amount)}</div>
               <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.deliveredNotInvoiced.count}</div>
-          </div>
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+            </div>
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
               <div className="text-sm text-gray-500">Booked (Pipeline Value)</div>
               <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.booked.amount)}</div>
               <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.booked.count}</div>
-          </div>
-          <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+            </div>
+            <div className="rounded-lg border border-gray-100 bg-gray-50 p-4">
               <div className="text-sm text-gray-500">Canceled (Pipeline Value)</div>
               <div className="text-xl font-extrabold text-gray-900 mt-1">{formatMoney(cashPipelineReport.canceled.amount)}</div>
               <div className="text-xs text-gray-500 mt-1">Count: {cashPipelineReport.canceled.count}</div>
+            </div>
           </div>
-        </div>
 
-        <div className="mt-5 h-80">
-          <Bar
-            data={incomeBarData}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: { legend: { display: false } },
-              scales: {
-                y: {
-                  ticks: {
-                    callback: (v) => `$${v}`,
+          <div className="mt-5 h-80">
+            <Bar
+              data={incomeBarData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: {
+                    ticks: {
+                      callback: (v) => `$${v}`,
+                    },
                   },
                 },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
-      </div>
       ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

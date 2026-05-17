@@ -4,6 +4,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { getLoads, getDrivers, getStoredUser, getUsers, deleteLoad } from "../../utils/api";
 import LoadDetailsPopup from "../../components/LoadDetailsPopup";
 import LoadTimeAlertIcon from "../../components/LoadTimeAlertIcon";
+import {
+	DataBadge,
+	DataTable,
+	HeaderCell,
+	TableEmptyState,
+} from "../../components/DataTable";
 
 const PERIODS = [
 	{ key: "daily", label: "Daily", days: 1 },
@@ -344,11 +350,10 @@ export default function LoadManagementClient() {
 							<button
 								key={p.key}
 								onClick={() => setPeriodKey(p.key)}
-								className={`px-4 py-2 rounded-lg font-medium transition border ${
-									periodKey === p.key
+								className={`px-4 py-2 rounded-lg font-medium transition border ${periodKey === p.key
 										? "bg-indigo-600 text-white border-indigo-600"
 										: "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
-								}`}
+									}`}
 							>
 								{p.label}
 							</button>
@@ -519,12 +524,11 @@ export default function LoadManagementClient() {
 					<button
 						type="button"
 						onClick={toggleInvoiceReadyFilter}
-						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${
-							String(filterStatus || "").toLowerCase() === "delivered" &&
-							String(filterPaymentStatus || "").toLowerCase() === "unpaid"
+						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "delivered" &&
+								String(filterPaymentStatus || "").toLowerCase() === "unpaid"
 								? "border-blue-400 bg-blue-50"
 								: "border-gray-200 bg-gray-50"
-						}`}
+							}`}
 						title="Filter to delivered + unpaid"
 					>
 						<div className="text-xs text-gray-500">Invoice Ready (Delivered + Unpaid)</div>
@@ -534,11 +538,10 @@ export default function LoadManagementClient() {
 					<button
 						type="button"
 						onClick={() => togglePaymentStatusFilter("invoiced")}
-						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${
-							String(filterPaymentStatus || "").toLowerCase() === "invoiced"
+						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterPaymentStatus || "").toLowerCase() === "invoiced"
 								? "border-blue-400 bg-blue-50"
 								: "border-gray-200 bg-gray-50"
-						}`}
+							}`}
 						title="Filter payment status: invoiced"
 					>
 						<div className="text-xs text-gray-500">Invoiced</div>
@@ -548,11 +551,10 @@ export default function LoadManagementClient() {
 					<button
 						type="button"
 						onClick={() => togglePaymentStatusFilter("paid")}
-						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${
-							String(filterPaymentStatus || "").toLowerCase() === "paid"
+						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterPaymentStatus || "").toLowerCase() === "paid"
 								? "border-blue-400 bg-blue-50"
 								: "border-gray-200 bg-gray-50"
-						}`}
+							}`}
 						title="Filter payment status: paid"
 					>
 						<div className="text-xs text-gray-500">Paid</div>
@@ -562,11 +564,10 @@ export default function LoadManagementClient() {
 					<button
 						type="button"
 						onClick={() => toggleStatusFilter("booked")}
-						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${
-							String(filterStatus || "").toLowerCase() === "booked"
+						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "booked"
 								? "border-blue-400 bg-blue-50"
 								: "border-gray-200 bg-gray-50"
-						}`}
+							}`}
 					>
 						<div className="text-xs text-gray-500">Booked</div>
 						<div className="text-lg font-semibold text-gray-900">{statusCounts.booked || 0}</div>
@@ -575,11 +576,10 @@ export default function LoadManagementClient() {
 					<button
 						type="button"
 						onClick={() => toggleStatusFilter("delivered")}
-						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${
-							String(filterStatus || "").toLowerCase() === "delivered"
+						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "delivered"
 								? "border-blue-400 bg-blue-50"
 								: "border-gray-200 bg-gray-50"
-						}`}
+							}`}
 					>
 						<div className="text-xs text-gray-500">Delivered</div>
 						<div className="text-lg font-semibold text-gray-900">{statusCounts.delivered || 0}</div>
@@ -588,178 +588,107 @@ export default function LoadManagementClient() {
 					<button
 						type="button"
 						onClick={() => toggleStatusFilter("canceled")}
-						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${
-							String(filterStatus || "").toLowerCase() === "canceled"
+						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "canceled"
 								? "border-blue-400 bg-blue-50"
 								: "border-gray-200 bg-gray-50"
-						}`}
+							}`}
 					>
 						<div className="text-xs text-gray-500">Canceled</div>
 						<div className="text-lg font-semibold text-gray-900">{statusCounts.canceled || 0}</div>
 					</button>
 				</div>
-				<div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-					<table className="min-w-full divide-y divide-gray-200">
-						<thead className="bg-gray-50">
-							<tr>
-								<th className="px-2 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									&nbsp;
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Load #
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									<button
-										type="button"
-										onClick={() => toggleSort("pickup")}
-										className="flex items-center gap-2"
-									>
-										<span>Pickup</span>
-										<span className="text-gray-400">{sortIcon("pickup")}</span>
-									</button>
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Dropoff
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Delivered
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Route
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Driver
-								</th>
-								{!isDispatcher ? (
-									<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-										Dispatcher
-									</th>
-								) : null}
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									<button
-										type="button"
-										onClick={() => toggleSort("amount")}
-										className="flex items-center gap-2"
-									>
-										<span>Amount</span>
-										<span className="text-gray-400">{sortIcon("amount")}</span>
-									</button>
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Company Fee
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Status
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Payment
-								</th>
-								<th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-									Docs
-								</th>
-							</tr>
-						</thead>
-						<tbody className="bg-white divide-y divide-gray-100">
-							{displayedLoads.map((load) => {
-								const loadDriverId = load.driverId ?? load.driverName;
-								const driver = drivers.find(
-									(d) => normalizeId(d.id) === normalizeId(loadDriverId)
-								);
-								const dispatcher = !isDispatcher
-									? users.find((u) => normalizeId(u.id) === normalizeId(load.dispatcherId))
-									: null;
-								const pickedUpDate = load.pickedUp_dateTime
-									? new Date(load.pickedUp_dateTime).toLocaleString()
-									: "";
-								const dropOffDate = load.dropOff_dateTime
-									? new Date(load.dropOff_dateTime).toLocaleString()
-									: "";
-								const deliveredAt = load.delivered_at
-									? new Date(load.delivered_at).toLocaleString()
-									: "";
-								const percentage = getCommissionPercent(load, driver);
-								const companyFee = getCompanyFee(load, driver);
+				<DataTable>
+					<thead>
+						<tr>
+							<HeaderCell>Status</HeaderCell>
+							<HeaderCell>Load #</HeaderCell>
+							<HeaderCell sortable onClick={() => toggleSort("pickup")} sortDirection={sortBy === "pickup" ? sortOrder : undefined}>Pickup</HeaderCell>
+							<HeaderCell>Dropoff</HeaderCell>
+							<HeaderCell>Delivered</HeaderCell>
+							<HeaderCell>Route</HeaderCell>
+							<HeaderCell>Driver</HeaderCell>
+							{!isDispatcher ? (
+								<HeaderCell>Dispatcher</HeaderCell>
+							) : null}
+							<HeaderCell sortable onClick={() => toggleSort("amount")} sortDirection={sortBy === "amount" ? sortOrder : undefined}>Amount</HeaderCell>
+							<HeaderCell>Company Fee</HeaderCell>
+							<HeaderCell>Load Status</HeaderCell>
+							<HeaderCell>Payment</HeaderCell>
+							<HeaderCell>Docs</HeaderCell>
+						</tr>
+					</thead>
+					<tbody className="divide-y divide-slate-200 bg-white">
+						{displayedLoads.length === 0 ? (
+							<TableEmptyState colSpan={isDispatcher ? 11 : 12} title="No loads in this view" description="Try a different period or status filter to widen the results." />
+						) : displayedLoads.map((load) => {
+							const loadDriverId = load.driverId ?? load.driverName;
+							const driver = drivers.find(
+								(d) => normalizeId(d.id) === normalizeId(loadDriverId)
+							);
+							const dispatcher = !isDispatcher
+								? users.find((u) => normalizeId(u.id) === normalizeId(load.dispatcherId))
+								: null;
+							const pickedUpDate = load.pickedUp_dateTime
+								? new Date(load.pickedUp_dateTime).toLocaleString()
+								: "";
+							const dropOffDate = load.dropOff_dateTime
+								? new Date(load.dropOff_dateTime).toLocaleString()
+								: "";
+							const deliveredAt = load.delivered_at
+								? new Date(load.delivered_at).toLocaleString()
+								: "";
+							const percentage = getCommissionPercent(load, driver);
+							const companyFee = getCompanyFee(load, driver);
 
-								let dotColor = "bg-gray-300";
-								if (load.payment_status === "unpaid") dotColor = "bg-red-500";
-								else if (load.payment_status === "invoiced") dotColor = "bg-blue-500";
-								else if (load.payment_status === "paid") dotColor = "bg-green-500";
-								return (
-									<tr
-										key={load.id}
-										className="hover:bg-blue-50 transition text-black cursor-pointer"
-										onClick={() => setSelectedLoad(load)}
-									>
-										<td className="px-2 py-2 whitespace-nowrap">
-											<span
-												className={`inline-block w-3 h-3 rounded-full mr-2 align-middle ${dotColor}`}
-											></span>
-										</td>
-										<td className="px-4 py-2 whitespace-nowrap">{load.loadNumber}</td>
-										<td className="px-4 py-2 whitespace-nowrap">
-											<div className="flex items-center gap-2">
-												<LoadTimeAlertIcon
-													pickupAt={load.pickedUp_dateTime}
-													deliveryAt={load.dropOff_dateTime}
-													now={now}
-												/>
-												<span>{pickedUpDate}</span>
-											</div>
-										</td>
-										<td className="px-4 py-2 whitespace-nowrap">{dropOffDate}</td>
-										<td className="px-4 py-2 whitespace-nowrap">{deliveredAt}</td>
-										<td className="px-4 py-2 whitespace-nowrap">
-											<div className="text-sm text-gray-900">{load.loadFrom}</div>
-											<div className="text-xs text-gray-500">→ {load.loadTo}</div>
-										</td>
-										<td className="px-4 py-2 whitespace-nowrap">{driver?.name || loadDriverId}</td>
-										{!isDispatcher ? (
-											<td className="px-4 py-2 whitespace-nowrap">{dispatcher?.name || load.dispatcherId}</td>
-										) : null}
-										<td className="px-4 py-2 whitespace-nowrap">
-											<div>{load.loadAmount}</div>
-											<div className="text-xs text-gray-500">{load.miles ? `${load.miles} mi` : "-"}</div>
-										</td>
-										<td className="px-4 py-2 whitespace-nowrap">
-											{companyFee ? companyFee.toFixed(2) : "0.00"}
-										</td>
-										<td className="px-4 py-2 whitespace-nowrap">{load.loadStatus}</td>
-										<td className="px-4 py-2 whitespace-nowrap">{load.payment_status}</td>
-										<td className="px-4 py-2 whitespace-nowrap text-xs">
-											<div
-												className={
-													String(load.bolStatus || "").toLowerCase() === "received"
-														? "text-green-700"
-														: "text-gray-600"
-												}
-											>
-												BOL: {load.bolStatus || "pending"}
-											</div>
-											<div
-												className={
-													String(load.podStatus || "").toLowerCase() === "received"
-														? "text-green-700"
-														: "text-gray-600"
-												}
-											>
-												POD: {load.podStatus || "pending"}
-											</div>
-											<div
-												className={
-													String(load.rateConfStatus || "").toLowerCase() === "received"
-														? "text-green-700"
-														: "text-gray-600"
-												}
-											>
-												RC: {load.rateConfStatus || "pending"}
-											</div>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
-				</div>
+							return (
+								<tr
+									key={load.id}
+									className="cursor-pointer text-slate-900 transition hover:bg-sky-50/70"
+									onClick={() => setSelectedLoad(load)}
+								>
+									<td className="px-4 py-3 text-sm whitespace-nowrap">
+										<DataBadge tone={load.payment_status === "paid" ? "success" : load.payment_status === "invoiced" ? "info" : "danger"}>{load.payment_status || "unpaid"}</DataBadge>
+									</td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap font-semibold text-slate-900">{load.loadNumber}</td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap">
+										<div className="flex items-center gap-2">
+											<LoadTimeAlertIcon
+												pickupAt={load.pickedUp_dateTime}
+												deliveryAt={load.dropOff_dateTime}
+												now={now}
+											/>
+											<span className="font-medium text-slate-900">{pickedUpDate}</span>
+										</div>
+									</td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{dropOffDate || "-"}</td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{deliveredAt || "-"}</td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap">
+										<div className="font-medium text-slate-900">{load.loadFrom}</div>
+										<div className="text-xs text-slate-500">→ {load.loadTo}</div>
+									</td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap font-semibold text-slate-900">{driver?.name || loadDriverId}</td>
+									{!isDispatcher ? (
+										<td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{dispatcher?.name || load.dispatcherId}</td>
+									) : null}
+									<td className="px-4 py-3 text-sm whitespace-nowrap">
+										<div className="font-semibold text-slate-900">{load.loadAmount}</div>
+										<div className="text-xs text-slate-500">{load.miles ? `${load.miles} mi` : "-"}</div>
+									</td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap"><DataBadge tone="violet">{companyFee ? companyFee.toFixed(2) : "0.00"}</DataBadge></td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap"><DataBadge tone={load.loadStatus === "delivered" ? "success" : load.loadStatus === "pickedUp" ? "info" : load.loadStatus === "canceled" ? "danger" : "warning"}>{load.loadStatus}</DataBadge></td>
+									<td className="px-4 py-3 text-sm whitespace-nowrap"><DataBadge tone={load.payment_status === "paid" ? "success" : load.payment_status === "invoiced" ? "info" : "warning"}>{load.payment_status || "unpaid"}</DataBadge></td>
+									<td className="px-4 py-3 text-sm">
+										<div className="flex flex-wrap gap-2">
+											<DataBadge tone={String(load.bolStatus || "").toLowerCase() === "received" ? "success" : "neutral"}>BOL {load.bolStatus || "pending"}</DataBadge>
+											<DataBadge tone={String(load.podStatus || "").toLowerCase() === "received" ? "success" : "neutral"}>POD {load.podStatus || "pending"}</DataBadge>
+											<DataBadge tone={String(load.rateConfStatus || "").toLowerCase() === "received" ? "success" : "neutral"}>RC {load.rateConfStatus || "pending"}</DataBadge>
+										</div>
+									</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</DataTable>
 			</div>
 		</div>
 	);

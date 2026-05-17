@@ -2,6 +2,15 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { getCompanyDetails, createCompanyDetails, updateCompanyDetails, deleteCompanyDetails } from "../../utils/api";
+import {
+  ActionButton,
+  DataBadge,
+  DataTable,
+  DeleteIcon,
+  EditIcon,
+  HeaderCell,
+  TableEmptyState,
+} from "../../components/DataTable";
 
 export default function CompanyDetailsPage() {
   const [companies, setCompanies] = useState([]);
@@ -37,7 +46,7 @@ export default function CompanyDetailsPage() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    
+
     if (name === "Phone") {
       // Only allow numbers, +, -, (), and spaces for phone
       const phoneValue = value.replace(/[^\d\s\-+()]/g, '');
@@ -71,7 +80,7 @@ export default function CompanyDetailsPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Validation
     if (!formData.CompanyName?.trim()) {
       setError("Company Name is required");
@@ -319,46 +328,35 @@ export default function CompanyDetailsPage() {
       </div>
 
       {/* Companies Table */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Company Name</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Phone</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Bank Name</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+      <DataTable>
+        <thead>
+          <tr>
+            <HeaderCell>Company Name</HeaderCell>
+            <HeaderCell>Email</HeaderCell>
+            <HeaderCell>Phone</HeaderCell>
+            <HeaderCell>Bank Name</HeaderCell>
+            <HeaderCell>Actions</HeaderCell>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-200 bg-white">
+          {companies.length === 0 ? (
+            !loading ? <TableEmptyState colSpan={5} title="No companies found" description="Create a company profile to use branding and banking details in invoices." /> : null
+          ) : companies.map((company) => (
+            <tr key={company.CompanyID} className="text-slate-900 transition hover:bg-sky-50/70">
+              <td className="px-4 py-3 text-sm font-semibold text-slate-900">{company.CompanyName}</td>
+              <td className="px-4 py-3 text-sm text-slate-600">{company.Email || "-"}</td>
+              <td className="px-4 py-3 text-sm text-slate-600">{company.Phone || "-"}</td>
+              <td className="px-4 py-3 text-sm"><DataBadge tone="violet">{company.BankName || "Bank pending"}</DataBadge></td>
+              <td className="px-4 py-3 text-sm">
+                <div className="flex gap-2">
+                  <ActionButton variant="primary" icon={<EditIcon />} onClick={() => handleEdit(company)}>Edit</ActionButton>
+                  <ActionButton variant="danger" icon={<DeleteIcon />} onClick={() => handleDelete(company.CompanyID)}>Delete</ActionButton>
+                </div>
+              </td>
             </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {companies.map((company) => (
-              <tr key={company.CompanyID} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm text-gray-800">{company.CompanyName}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{company.Email || "-"}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{company.Phone || "-"}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{company.BankName || "-"}</td>
-                <td className="px-4 py-3 text-sm flex gap-2">
-                  <button
-                    onClick={() => handleEdit(company)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(company.CompanyID)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!loading && companies.length === 0 && (
-          <div className="p-4 text-center text-gray-500">No companies found</div>
-        )}
-      </div>
+          ))}
+        </tbody>
+      </DataTable>
     </div>
   );
 }

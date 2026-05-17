@@ -4,210 +4,210 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	createDriverAgreement,
-	deleteDriverDocument,
-	deleteDriverExtraDocument,
-	getDocumentUrl,
-	getDriver,
-	getDriverExtraDocuments,
+  createDriverAgreement,
+  deleteDriverDocument,
+  deleteDriverExtraDocument,
+  getDocumentUrl,
+  getDriver,
+  getDriverExtraDocuments,
   getStoredUser,
-	listDriverAgreements,
-	uploadDriverDocument,
-	uploadDriverExtraDocuments,
+  listDriverAgreements,
+  uploadDriverDocument,
+  uploadDriverExtraDocuments,
 } from "../../../utils/api";
 
 const ACCEPTED_TYPES = ".pdf,.png,.jpg,.jpeg,.doc,.docx";
 
 function getFilenameFromPath(path) {
-	if (!path) return "";
-	return String(path).split("/").pop() || "";
+  if (!path) return "";
+  return String(path).split("/").pop() || "";
 }
 
 export default function DriverDetailsClient({ driverId }) {
   const params = useParams();
   const routeDriverId = params?.id;
 
-	const normalizedDriverId = useMemo(() => {
+  const normalizedDriverId = useMemo(() => {
     const propDriverId =
       typeof driverId === "string" || typeof driverId === "number" ? driverId : null;
     const candidate = propDriverId ?? routeDriverId;
     if (candidate === null || candidate === undefined) return null;
     const n = Number(candidate);
-		if (!Number.isFinite(n)) return null;
+    if (!Number.isFinite(n)) return null;
     return String(candidate);
   }, [driverId, routeDriverId]);
 
-	const [driver, setDriver] = useState(null);
-	const [extraDocuments, setExtraDocuments] = useState([]);
-	const [agreements, setAgreements] = useState([]);
+  const [driver, setDriver] = useState(null);
+  const [extraDocuments, setExtraDocuments] = useState([]);
+  const [agreements, setAgreements] = useState([]);
   const [me, setMe] = useState(null);
-	const [latestSigningLink, setLatestSigningLink] = useState("");
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
-	const [copiedKey, setCopiedKey] = useState(null);
+  const [latestSigningLink, setLatestSigningLink] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copiedKey, setCopiedKey] = useState(null);
 
   useEffect(() => {
     setMe(getStoredUser());
   }, []);
 
-	const copyToClipboard = async (value, key) => {
-		if (value === null || value === undefined || value === "") return;
-		const text = String(value);
+  const copyToClipboard = async (value, key) => {
+    if (value === null || value === undefined || value === "") return;
+    const text = String(value);
 
-		const markCopied = () => {
-			setCopiedKey(key);
-			window.setTimeout(() => setCopiedKey(null), 1200);
-		};
+    const markCopied = () => {
+      setCopiedKey(key);
+      window.setTimeout(() => setCopiedKey(null), 1200);
+    };
 
-		try {
-			if (navigator?.clipboard?.writeText) {
-				await navigator.clipboard.writeText(text);
-				markCopied();
-				return;
-			}
-		} catch {
-			// fall through
-		}
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        markCopied();
+        return;
+      }
+    } catch {
+      // fall through
+    }
 
-		try {
-			const textarea = document.createElement("textarea");
-			textarea.value = text;
-			textarea.setAttribute("readonly", "");
-			textarea.style.position = "fixed";
-			textarea.style.top = "-9999px";
-			document.body.appendChild(textarea);
-			textarea.select();
-			document.execCommand("copy");
-			document.body.removeChild(textarea);
-			markCopied();
-		} catch {
-			// ignore
-		}
-	};
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      markCopied();
+    } catch {
+      // ignore
+    }
+  };
 
-	const CopyButton = ({ value, copyKey, ariaLabel }) => (
-		<button
-			type="button"
-			onClick={() => copyToClipboard(value, copyKey)}
-			className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-800 disabled:opacity-50"
-			disabled={loading || value === null || value === undefined || value === ""}
-			aria-label={ariaLabel}
-			title="Copy"
-		>
-			<svg
-				xmlns="http://www.w3.org/2000/svg"
-				width="16"
-				height="16"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			>
-				<rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-				<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-			</svg>
-			{copiedKey === copyKey ? (
-				<span className="text-xs text-green-700">Copied</span>
-			) : null}
-		</button>
-	);
+  const CopyButton = ({ value, copyKey, ariaLabel }) => (
+    <button
+      type="button"
+      onClick={() => copyToClipboard(value, copyKey)}
+      className="inline-flex items-center gap-1 text-gray-500 hover:text-gray-800 disabled:opacity-50"
+      disabled={loading || value === null || value === undefined || value === ""}
+      aria-label={ariaLabel}
+      title="Copy"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+      </svg>
+      {copiedKey === copyKey ? (
+        <span className="text-xs text-green-700">Copied</span>
+      ) : null}
+    </button>
+  );
 
-	const docCards = useMemo(
-		() => [
-			{
-				key: "driverLicenseFront",
-				label: "Driver License (Front)",
-				pathKey: "driverLicenseFrontPath",
-			},
-			{
-				key: "driverLicenseBack",
-				label: "Driver License (Back)",
-				pathKey: "driverLicenseBackPath",
-			},
-			{
-				key: "coi",
-				label: "COI",
-				pathKey: "coiDocumentPath",
-			},
-			{
-				key: "mcAuthority",
-				label: "MC Authority",
-				pathKey: "mcAuthorityDocumentPath",
-			},
-			{
-				key: "w9",
-				label: "W-9",
-				pathKey: "w9DocumentPath",
-			},
-		],
-		[]
-	);
+  const docCards = useMemo(
+    () => [
+      {
+        key: "driverLicenseFront",
+        label: "Driver License (Front)",
+        pathKey: "driverLicenseFrontPath",
+      },
+      {
+        key: "driverLicenseBack",
+        label: "Driver License (Back)",
+        pathKey: "driverLicenseBackPath",
+      },
+      {
+        key: "coi",
+        label: "COI",
+        pathKey: "coiDocumentPath",
+      },
+      {
+        key: "mcAuthority",
+        label: "MC Authority",
+        pathKey: "mcAuthorityDocumentPath",
+      },
+      {
+        key: "w9",
+        label: "W-9",
+        pathKey: "w9DocumentPath",
+      },
+    ],
+    []
+  );
 
-	const fetchAll = useCallback(async (id) => {
-		if (!id) return;
-		setLoading(true);
-		try {
-			const d = await getDriver(id);
-			setDriver(d);
+  const fetchAll = useCallback(async (id) => {
+    if (!id) return;
+    setLoading(true);
+    try {
+      const d = await getDriver(id);
+      setDriver(d);
 
-			const extra = await getDriverExtraDocuments(id);
-			setExtraDocuments(Array.isArray(extra) ? extra : []);
+      const extra = await getDriverExtraDocuments(id);
+      setExtraDocuments(Array.isArray(extra) ? extra : []);
 
-			try {
-				const a = await listDriverAgreements(id);
-				setAgreements(Array.isArray(a) ? a : []);
-			} catch {
-				setAgreements([]);
-			}
+      try {
+        const a = await listDriverAgreements(id);
+        setAgreements(Array.isArray(a) ? a : []);
+      } catch {
+        setAgreements([]);
+      }
 
-			setError("");
-		} catch (e) {
-			setError(e?.message || "Failed to load driver");
-		} finally {
-			setLoading(false);
-		}
-	}, []);
+      setError("");
+    } catch (e) {
+      setError(e?.message || "Failed to load driver");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-	useEffect(() => {
-		fetchAll(normalizedDriverId);
-	}, [normalizedDriverId, fetchAll]);
+  useEffect(() => {
+    fetchAll(normalizedDriverId);
+  }, [normalizedDriverId, fetchAll]);
 
-	const createAgreementLink = async () => {
-		if (!normalizedDriverId) return;
+  const createAgreementLink = async () => {
+    if (!normalizedDriverId) return;
 
-		setLoading(true);
-		try {
-			const resp = await createDriverAgreement(normalizedDriverId, { expiresInDays: 30 });
-			const token = resp?.token;
-			if (!token) throw new Error("No token returned");
+    setLoading(true);
+    try {
+      const resp = await createDriverAgreement(normalizedDriverId, { expiresInDays: 30 });
+      const token = resp?.token;
+      if (!token) throw new Error("No token returned");
 
-			const link = `${window.location.origin}/sign/driver-agreement/${token}`;
-			setLatestSigningLink(link);
-			await copyToClipboard(link, "agreementLink");
-			await fetchAll(normalizedDriverId);
-			setError("");
-		} catch (e) {
-			setError(e?.message || "Failed to create agreement link");
-		} finally {
-			setLoading(false);
-		}
-	};
+      const link = `${window.location.origin}/sign/driver-agreement/${token}`;
+      setLatestSigningLink(link);
+      await copyToClipboard(link, "agreementLink");
+      await fetchAll(normalizedDriverId);
+      setError("");
+    } catch (e) {
+      setError(e?.message || "Failed to create agreement link");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-	const handleDocumentUpload = async (documentType, file) => {
-		if (!normalizedDriverId || !file) return;
-		setLoading(true);
-		try {
+  const handleDocumentUpload = async (documentType, file) => {
+    if (!normalizedDriverId || !file) return;
+    setLoading(true);
+    try {
       await uploadDriverDocument(normalizedDriverId, documentType, file);
- 		await fetchAll(normalizedDriverId);
- 		setError("");
- 	} catch (e) {
- 		setError(e?.message || "Upload failed");
- 	} finally {
- 		setLoading(false);
- 	}
-	};
+      await fetchAll(normalizedDriverId);
+      setError("");
+    } catch (e) {
+      setError(e?.message || "Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDocumentDelete = async (documentType) => {
     if (!normalizedDriverId) return;

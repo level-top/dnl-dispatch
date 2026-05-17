@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getDrivers, getLoads, getCompanyDetails, createInvoice } from "../../../utils/api";
+import { DataBadge, DataTable, HeaderCell } from "../../../components/DataTable";
 
 export default function CreateInvoicePage() {
   const router = useRouter();
@@ -79,10 +80,10 @@ export default function CreateInvoicePage() {
   const generateInvoiceNumber = () => {
     // Get company abbreviation (first 3 chars)
     // const companyAbbr = company?.CompanyName?.substring(0, 3).toUpperCase() || "DNL";
-    
+
     // Get driver abbreviation (first 3 chars)
     const driverAbbr = driver?.name?.substring(0, 3).toUpperCase() || "";
-    
+
     // Get current date and time in hours format (YYMMDDHH)
     const now = new Date();
     const year = String(now.getFullYear()).slice(-2);
@@ -90,7 +91,7 @@ export default function CreateInvoicePage() {
     const day = String(now.getDate()).padStart(2, '0');
     const hour = String(now.getHours()).padStart(2, '0');
     const dateTimeHours = `${year}${month}${day}${hour}`;
-    
+
     return `${driverAbbr}${dateTimeHours}`;
   };
 
@@ -142,7 +143,7 @@ export default function CreateInvoicePage() {
     }
   };
 
-  const availableLoads = selectedDriver 
+  const availableLoads = selectedDriver
     ? loads.filter(l => (l.driverId ?? l.driverName) == selectedDriver && l.loadStatus == "delivered" && l.payment_status == "unpaid")
     : [];
 
@@ -160,7 +161,7 @@ export default function CreateInvoicePage() {
       {/* Form Section */}
       <div className="max-w-4xl w-full mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-6">Create New Invoice</h1>
-        
+
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-6 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
@@ -210,25 +211,25 @@ export default function CreateInvoicePage() {
           {availableLoads.length > 0 && (
             <div>
               <h2 className="text-lg font-bold mb-2">Select Loads for Invoice</h2>
-              <table className="min-w-full divide-y divide-gray-200 text-blue-900">
-                <thead className="bg-gray-50">
+              <DataTable hint="Swipe to review available loads">
+                <thead>
                   <tr>
-                    <th className="px-3 py-3"></th>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Date</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Load ID</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Origin/Dest.</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Miles</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Pay</th>
+                    <HeaderCell></HeaderCell>
+                    <HeaderCell>Date</HeaderCell>
+                    <HeaderCell>Load ID</HeaderCell>
+                    <HeaderCell>Origin/Dest.</HeaderCell>
+                    <HeaderCell>Miles</HeaderCell>
+                    <HeaderCell align="right">Pay</HeaderCell>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200 text-sm">
+                <tbody className="divide-y divide-slate-200 bg-white text-sm">
                   {availableLoads.map(load => {
                     const miles = parseFloat(load.miles) || 0;
                     const amt = parseFloat(load.loadAmount) || 0;
                     const from = (load.loadFrom || "-").split(" ").slice(0, 6).join(" ");
                     const to = (load.loadTo || "-").split(" ").slice(0, 6).join(" ");
                     return (
-                      <tr key={load.id} className="hover:bg-gray-50">
+                      <tr key={load.id} className="transition hover:bg-sky-50/70">
                         <td className="px-3 py-2 text-center">
                           <input
                             id={`select-load-${load.id}`}
@@ -240,16 +241,16 @@ export default function CreateInvoicePage() {
                             autoComplete="off"
                           />
                         </td>
-                        <td className="px-3 py-2">{formatDate(load.dateTime)}</td>
-                        <td className="px-3 py-2 font-medium text-indigo-600">{load.loadNumber || load.id}</td>
-                        <td className="px-3 py-2">{`${from} to ${to}`}</td>
-                        <td className="px-3 py-2">{miles || "-"}</td>
-                        <td className="px-3 py-2 text-right font-medium">{formatCurrency(amt)}</td>
+                        <td className="px-3 py-2 text-slate-600">{formatDate(load.dateTime)}</td>
+                        <td className="px-3 py-2 font-medium text-sky-700">{load.loadNumber || load.id}</td>
+                        <td className="px-3 py-2 text-slate-600">{`${from} to ${to}`}</td>
+                        <td className="px-3 py-2"><DataBadge tone="neutral">{miles || "-"}</DataBadge></td>
+                        <td className="px-3 py-2 text-right font-medium text-slate-900">{formatCurrency(amt)}</td>
                       </tr>
                     );
                   })}
                 </tbody>
-              </table>
+              </DataTable>
             </div>
           )}
 
@@ -282,38 +283,37 @@ export default function CreateInvoicePage() {
               <p className="text-sm text-gray-500 mt-1">Issue Date: {formatDate(new Date())}</p>
             </div>
             <div className="text-right">
-              <img src={company?.LogoURL || "/DNL_logo.png"} alt="Company Logo" className="h-12 w-auto mb-2 ml-auto rounded-md" />
-              <p className="text-xl font-bold text-gray-700">{company?.CompanyName || "Drive Now Logistics"}</p>
-              <p className="text-sm text-gray-500">{company?.Address || "123 Main St, City, State"}</p>
-              <p className="text-sm text-gray-500">{company?.Phone || "(555) 123-4567"}</p>
+              <img src={company?.LogoURL || "/logo.png"} alt="Company Logo" className="h-12 w-auto mb-2 ml-auto rounded-md" />
+              <DataTable hint="Swipe to review invoice breakdown">
+                  <thead>
             </div>
-          </header>
-
-          <section className="mb-10 bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-600">
-            <h2 className="text-lg font-bold text-indigo-800 mb-4">SETTLEMENT DETAILS</h2>
-            <div className="grid grid-cols-2 gap-8 text-sm text-gray-700">
-              <div>
+                      <HeaderCell>Date</HeaderCell>
+                      <HeaderCell>Load ID</HeaderCell>
+                      <HeaderCell>Origin/Dest.</HeaderCell>
+                      <HeaderCell>Miles</HeaderCell>
+                      <HeaderCell>Rate/mile</HeaderCell>
+                      <HeaderCell align="right">Pay</HeaderCell>
                 <h3 className="text-base font-bold text-indigo-700 mb-2">Driver Information</h3>
-                <div className="mb-2"><span className="font-semibold">Driver Name:</span> <span className="text-gray-900">{driver?.name || "N/A"}</span></div>
-                <div className="mb-2"><span className="font-semibold">MC Number:</span> <span>{driver?.MC_number || "N/A"}</span></div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 bg-white text-sm">
                 <div className="mb-2"><span className="font-semibold">Contact:</span> <span>{driver?.contactNumber || "N/A"}</span></div>
               </div>
               <div>
                 <h3 className="text-base font-bold text-indigo-700 mb-2">Company Account</h3>
                 <div className="mb-2"><span className="font-semibold">Bank:</span> <span className="font-mono">{company?.BankName || "Global Transport Bank"}</span></div>
-                <div className="mb-2"><span className="font-semibold">IBAN:</span> <span className="text-lg font-extrabold text-indigo-700">{company?.IBAN || "N/A"}</span></div>
-                <div className="mb-2"><span className="font-semibold">Holder:</span> <span>{company?.AccountHolder || "N/A"}</span></div>
-              </div>
-            </div>
+                        <tr key={load.id} className="transition hover:bg-sky-50/70">
+                          <td className="px-3 py-2 whitespace-nowrap text-slate-600">{formatDate(load.dateTime)}</td>
+                          <td className="px-3 py-2 font-medium text-sky-700 whitespace-nowrap">{load.loadNumber || load.loadId}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-slate-600">{
           </section>
 
           <section className="mb-10">
             <h2 className="text-xl font-bold text-gray-700 mb-4 border-b pb-2">LOAD SERVICE BREAKDOWN</h2>
             <table className="min-w-full divide-y divide-gray-200 text-blue-900">
               <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium uppercase">Date</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium uppercase">Load ID</th>
+                          <td className="px-3 py-2 whitespace-nowrap"><DataBadge tone="neutral">{miles || "-"}</DataBadge></td>
+                          <td className="px-3 py-2 whitespace-nowrap text-slate-600">{ratePerMile}</td>
+                          <td className="px-3 py-2 whitespace-nowrap text-right font-medium text-slate-900">{formatCurrency(amt)}</td>
                   <th className="px-3 py-3 text-left text-xs font-medium uppercase">Origin/Dest.</th>
                   <th className="px-3 py-3 text-left text-xs font-medium uppercase">Miles</th>
                   <th className="px-3 py-3 text-right text-xs font-medium uppercase">Pay</th>
@@ -324,8 +324,7 @@ export default function CreateInvoicePage() {
                   const miles = parseFloat(load.miles) || 0;
                   const amt = parseFloat(load.loadAmount) || 0;
                   const from = (load.loadFrom || "-").split(" ").slice(0, 6).join(" ");
-                  const to = (load.loadTo || "-").split(" ").slice(0, 6).join(" ");
-                  return (
+              </DataTable>
                     <tr key={load.id}>
                       <td className="px-3 py-2">{formatDate(load.dateTime)}</td>
                       <td className="px-3 py-2 font-medium text-indigo-600">{load.loadNumber || load.id}</td>
@@ -364,7 +363,7 @@ export default function CreateInvoicePage() {
             </div>
           </section>
            {/* Footer Notes */}
-       {/* <footer className="mt-8 text-sm text-gray-600 border-t pt-4">
+      {/* <footer className="mt-8 text-sm text-gray-600 border-t pt-4">
           <p className="font-semibold">Terms & Notes:</p>
           <p>1. This settlement is based on a dispatch service fee of <span>{commissionRate}%</span> of the total gross income.</p>
           <p>2. Payment will be processed via <span>{driver?.paymentMethod || "Direct Deposit"}</span> within 24 hours.</p>
@@ -373,19 +372,19 @@ export default function CreateInvoicePage() {
         </footer>
         {error && <div className="text-red-600 mb-2">{error}</div>}
         </div> */}
-      {/* Invoice Container */} 
+      {/* Invoice Container */}
       <div ref={invoiceRef} className="invoice-container bg-white p-8 md:p-12 rounded-xl shadow-2xl w-full max-w-4xl border border-gray-100">
         {/* ...existing code for invoice, but use selectedLoadsData instead of loads... */}
         <header className="flex justify-between items-start mb-10 border-b pb-4">
           <div>
             <h1 className="text-4xl font-extrabold text-gray-800">INVOICE</h1>
-              <p className="text-lg text-indigo-600 font-semibold mt-1">Settlement ID: {generateInvoiceNumber() || "00000"}</p>
+            <p className="text-lg text-indigo-600 font-semibold mt-1">Settlement ID: {generateInvoiceNumber() || "00000"}</p>
             <p className="text-sm text-gray-500 mt-1">Issue Date: {formatDate(new Date())}</p>
             <p className="text-sm text-gray-500">Pay Period: {formatDate(new Date())} to {formatDate(new Date())}</p>
           </div>
           <div className="text-right">
             <Image
-              src={company?.LogoURL || "/DNL_logo.png"}
+              src={company?.LogoURL || "/logo.png"}
               alt="Company Logo"
               width={160}
               height={48}
@@ -393,15 +392,15 @@ export default function CreateInvoicePage() {
               unoptimized
             />
             <p className="text-xl font-bold text-gray-700">{company?.CompanyName || "Drive Now Logistics"}</p>
-              <p className="text-sm text-gray-500">{company?.Address || "123 Main St, City, State"}</p>
-              <p className="text-sm text-gray-500">{company?.Phone || "(555) 123-4567"}</p>
+            <p className="text-sm text-gray-500">{company?.Address || "123 Main St, City, State"}</p>
+            <p className="text-sm text-gray-500">{company?.Phone || "(555) 123-4567"}</p>
           </div>
         </header>
         {/* Payee & Company Account Information */}
         <section className="mb-10 bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-600">
           <h2 className="text-lg font-bold text-indigo-800 mb-4">SETTLEMENT DETAILS</h2>
           <div className="grid grid-cols-2 gap-8 text-sm text-gray-700">
-        {/* {pdf.text(`Settlement ID: DRV-${selectedDriver || "00000"}`, 10, y)}; */}
+            {/* {pdf.text(`Settlement ID: DRV-${selectedDriver || "00000"}`, 10, y)}; */}
             <div>
               <h3 className="text-base font-bold text-indigo-700 mb-2">Driver Information</h3>
               <div className="mb-2"><span className="font-semibold">Driver Name:</span> <span className="text-gray-900">{driver?.name || "N/A"}</span></div>
@@ -411,15 +410,15 @@ export default function CreateInvoicePage() {
             </div>
             {/* Company Account Info */}
             <div>
-               <h3 className="text-base font-bold text-indigo-700 mb-2">Company Account</h3>
-                <div className="mb-2"><span className="font-semibold">Bank:</span> <span className="font-mono">{company?.BankName || "Global Transport Bank"}</span></div>
-                <div className="mb-2"><span className="font-semibold">IBAN:</span> <span className="text-lg font-extrabold text-indigo-700">{company?.IBAN || "N/A"}</span></div>
-                <div className="mb-2"><span className="font-semibold">Holder:</span> <span>{company?.AccountHolder || "N/A"}</span></div>
-                {/* <div className="mb-2"><span className="font-semibold">Contact:</span> <span className="font-mono">(555) 123-4567 | info@drivenow.com</span></div> */}
+              <h3 className="text-base font-bold text-indigo-700 mb-2">Company Account</h3>
+              <div className="mb-2"><span className="font-semibold">Bank:</span> <span className="font-mono">{company?.BankName || "Global Transport Bank"}</span></div>
+              <div className="mb-2"><span className="font-semibold">IBAN:</span> <span className="text-lg font-extrabold text-indigo-700">{company?.IBAN || "N/A"}</span></div>
+              <div className="mb-2"><span className="font-semibold">Holder:</span> <span>{company?.AccountHolder || "N/A"}</span></div>
+              {/* <div className="mb-2"><span className="font-semibold">Contact:</span> <span className="font-mono">(555) 123-4567 | info@drivenow.com</span></div> */}
             </div>
           </div>
-        {/* Settlement Summary Section */}
-        {/* <section className="mb-10 bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-600">
+          {/* Settlement Summary Section */}
+          {/* <section className="mb-10 bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-600">
           <h2 className="text-lg font-bold text-yellow-800 mb-2">Settlement Summary</h2>
           <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
             <div><span className="font-semibold">Gross Income:</span> <span>{formatCurrency(grossLoadTotal)}</span></div>
@@ -431,52 +430,50 @@ export default function CreateInvoicePage() {
         {/* I. Load Service Breakdown (Table) */}
         <section className="mb-10">
           <h2 className="text-xl font-bold text-gray-700 mb-4 border-b pb-2">I. LOAD SERVICE BREAKDOWN (GROSS PAY)</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 text-blue-900">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Load ID</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origin/Dest.</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Miles</th>
-                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rate/mile</th>
-                  <th className="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pay</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200 text-sm">
-                {selectedLoadsData.map(load => {
-                  const miles = parseFloat(load.miles) || 0;
-                  const amt = parseFloat(load.loadAmount) || 0;
-                  const ratePerMile = miles > 0 ? (amt / miles).toFixed(2) : "-";
-                  return (
-                    <tr key={load.id} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 whitespace-nowrap">{formatDate(load.dateTime)}</td>
-                      <td className="px-3 py-2 font-medium text-indigo-600 whitespace-nowrap">{load.loadNumber || load.loadId}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{
-                        (() => {
-                          const from = (load.loadFrom || "-").split(" ").slice(0, 6).join(" ");
-                          const to = (load.loadTo || "-").split(" ").slice(0, 6).join(" ");
-                          return `${from} to ${to}`;
-                        })()
-                      }</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{miles || "-"}</td>
-                      <td className="px-3 py-2 whitespace-nowrap">{ratePerMile}</td>
-                      <td className="px-3 py-2 whitespace-nowrap text-right font-medium">{formatCurrency(amt)}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-              <tfoot>
-                <tr className="bg-gray-100">
-                  <td colSpan={5}></td>
-                  <td className="px-3 py-3 text-right text-sm font-bold text-gray-700" colSpan={2}>
-                    TOTAL GROSS LOAD PAY: {formatCurrency(grossLoadTotal)}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-            {!loading && selectedLoadsData.length === 0 && <div className="text-gray-500 mt-2">No loads selected for invoice.</div>}
-          </div>
+          <DataTable hint="Swipe to review invoice breakdown">
+            <thead>
+              <tr>
+                <HeaderCell>Date</HeaderCell>
+                <HeaderCell>Load ID</HeaderCell>
+                <HeaderCell>Origin/Dest.</HeaderCell>
+                <HeaderCell>Miles</HeaderCell>
+                <HeaderCell>Rate/mile</HeaderCell>
+                <HeaderCell align="right">Pay</HeaderCell>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 bg-white text-sm">
+              {selectedLoadsData.map(load => {
+                const miles = parseFloat(load.miles) || 0;
+                const amt = parseFloat(load.loadAmount) || 0;
+                const ratePerMile = miles > 0 ? (amt / miles).toFixed(2) : "-";
+                return (
+                  <tr key={load.id} className="transition hover:bg-sky-50/70">
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-600">{formatDate(load.dateTime)}</td>
+                    <td className="px-3 py-2 font-medium text-sky-700 whitespace-nowrap">{load.loadNumber || load.loadId}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-600">{
+                      (() => {
+                        const from = (load.loadFrom || "-").split(" ").slice(0, 6).join(" ");
+                        const to = (load.loadTo || "-").split(" ").slice(0, 6).join(" ");
+                        return `${from} to ${to}`;
+                      })()
+                    }</td>
+                    <td className="px-3 py-2 whitespace-nowrap"><DataBadge tone="neutral">{miles || "-"}</DataBadge></td>
+                    <td className="px-3 py-2 whitespace-nowrap text-slate-600">{ratePerMile}</td>
+                    <td className="px-3 py-2 whitespace-nowrap text-right font-medium text-slate-900">{formatCurrency(amt)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="bg-gray-100">
+                <td colSpan={5}></td>
+                <td className="px-3 py-3 text-right text-sm font-bold text-gray-700" colSpan={2}>
+                  TOTAL GROSS LOAD PAY: {formatCurrency(grossLoadTotal)}
+                </td>
+              </tr>
+            </tfoot>
+          </DataTable>
+          {!loading && selectedLoadsData.length === 0 && <div className="text-gray-500 mt-2">No loads selected for invoice.</div>}
         </section>
         {/* II. Commission and Fees */}
         <section className="mb-10 p-6 bg-red-50 rounded-lg border-l-4 border-red-600">

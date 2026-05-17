@@ -77,7 +77,7 @@ export default function InvoiceTemplate({
 
         <div className="text-right">
           <Image
-            src={company?.LogoURL || "/DNL_logo.png"}
+            src={company?.LogoURL || "/logo.png"}
             alt="Company Logo"
             width={160}
             height={48}

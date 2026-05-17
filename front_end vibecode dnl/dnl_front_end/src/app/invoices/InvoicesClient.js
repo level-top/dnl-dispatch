@@ -4,6 +4,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getAllInvoices, payInvoice, undoPayInvoice, deleteInvoice } from "../../utils/api";
 import PaymentModal from "../../components/PaymentModal";
+import {
+  ActionButton,
+  DataBadge,
+  DataTable,
+  DeleteIcon,
+  DownloadIcon,
+  HeaderCell,
+  PaymentIcon,
+  TableEmptyState,
+} from "../../components/DataTable";
 
 export default function InvoicesClient() {
   const router = useRouter();
@@ -26,10 +36,10 @@ export default function InvoicesClient() {
     const raw = String(searchParams?.get("status") || "").toLowerCase();
     const mapped =
       raw === "pending" ? "Pending" :
-      raw === "paid" ? "Paid" :
-      raw === "partial" ? "Partial" :
-      raw === "all" || raw === "" ? "All" :
-      null;
+        raw === "paid" ? "Paid" :
+          raw === "partial" ? "Partial" :
+            raw === "all" || raw === "" ? "All" :
+              null;
     if (mapped) setFilterStatus(mapped);
   }, [searchParams]);
 
@@ -248,11 +258,10 @@ export default function InvoicesClient() {
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`px-4 py-2 rounded font-medium ${
-                filterStatus === status
+              className={`px-4 py-2 rounded font-medium ${filterStatus === status
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-              }`}
+                }`}
             >
               {status}
             </button>
@@ -319,129 +328,105 @@ export default function InvoicesClient() {
       </div>
 
       {/* Invoices Table */}
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer select-none" onClick={() => {
-                setSortBy("InvoiceNumber");
-                setSortDir(sortBy === "InvoiceNumber" && sortDir === "desc" ? "asc" : "desc");
-              }}>
-                Invoice #
-                <span className="ml-1 align-middle text-xs">
-                  {sortBy === "InvoiceNumber" ? (sortDir === "asc" ? "▲" : "▼") : ""}
-                </span>
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Driver</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Company</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer select-none" onClick={() => {
-                setSortBy("TotalAmount");
-                setSortDir(sortBy === "TotalAmount" && sortDir === "desc" ? "asc" : "desc");
-              }}>
-                <div>Amount
-                  <span className="ml-1 align-middle text-xs">
-                    {sortBy === "TotalAmount" ? (sortDir === "asc" ? "▲" : "▼") : ""}
-                  </span>
-                </div>
-                <div className="text-xs font-normal text-gray-500">
-                  Total: ${totalFilteredAmount.toFixed(2)}
-                </div>
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Received / Pending</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Commission</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer select-none" onClick={() => {
-                setSortBy("InvoiceDate");
-                setSortDir(sortBy === "InvoiceDate" && sortDir === "desc" ? "asc" : "desc");
-              }}>
-                Date
-                <span className="ml-1 align-middle text-xs">
-                  {sortBy === "InvoiceDate" ? (sortDir === "asc" ? "▲" : "▼") : ""}
-                </span>
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {sortedInvoices.map((invoice) => (
-              <tr key={invoice.InvoiceID} className="hover:bg-gray-50">
-                <td className="px-4 py-3 text-sm font-medium">
-                  <Link
-                    href={`/invoices/${invoice.InvoiceID}`}
-                    className="text-indigo-600 hover:underline"
-                    title="Open invoice details"
-                  >
-                    {invoice.InvoiceNumber}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800">{invoice.driverName}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">{invoice.CompanyName}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">${invoice.TotalAmount || 0}</td>
-                <td className="px-4 py-3 text-sm text-gray-800">
-                  {String(invoice.InvoiceStatus || "").toLowerCase() === "partial" && (
-                    <span className="text-xs text-gray-600">
-                      ${Number(invoice.TotalPaid ?? 0).toFixed(2)} / ${Number(invoice.Balance ?? (Number(invoice.TotalAmount) || 0)).toFixed(2)}
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800">{invoice.Commission || 0}%</td>
-                <td className="px-4 py-3 text-sm">
-                  <span
-                    className={`px-2 py-1 rounded text-white text-xs font-bold ${
-                      String(invoice.InvoiceStatus || "").toLowerCase() === "paid"
-                        ? "bg-green-500"
-                        : String(invoice.InvoiceStatus || "").toLowerCase() === "partial"
-                          ? "bg-blue-600"
-                          : "bg-yellow-500"
-                    }`}
-                  >
-                    {invoice.InvoiceStatus}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-sm text-gray-800">
-                  {new Date(invoice.InvoiceDate).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3 text-sm flex gap-2">
-                  <button
+      <DataTable hint="Swipe to compare invoice columns">
+        <thead>
+          <tr>
+            <HeaderCell sortable onClick={() => {
+              setSortBy("InvoiceNumber");
+              setSortDir(sortBy === "InvoiceNumber" && sortDir === "desc" ? "asc" : "desc");
+            }} sortDirection={sortBy === "InvoiceNumber" ? sortDir : undefined}>Invoice #</HeaderCell>
+            <HeaderCell>Driver</HeaderCell>
+            <HeaderCell>Company</HeaderCell>
+            <HeaderCell sortable onClick={() => {
+              setSortBy("TotalAmount");
+              setSortDir(sortBy === "TotalAmount" && sortDir === "desc" ? "asc" : "desc");
+            }} sortDirection={sortBy === "TotalAmount" ? sortDir : undefined} sublabel={`Total: $${totalFilteredAmount.toFixed(2)}`}>Amount</HeaderCell>
+            <HeaderCell>Received / Pending</HeaderCell>
+            <HeaderCell>Commission</HeaderCell>
+            <HeaderCell>Status</HeaderCell>
+            <HeaderCell sortable onClick={() => {
+              setSortBy("InvoiceDate");
+              setSortDir(sortBy === "InvoiceDate" && sortDir === "desc" ? "asc" : "desc");
+            }} sortDirection={sortBy === "InvoiceDate" ? sortDir : undefined}>Date</HeaderCell>
+            <HeaderCell>Actions</HeaderCell>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-200 bg-white">
+          {!loading && sortedInvoices.length === 0 ? (
+            <TableEmptyState colSpan={9} title="No invoices found" description="Adjust the filters or create a new invoice to populate this list." />
+          ) : sortedInvoices.map((invoice) => (
+            <tr key={invoice.InvoiceID} className="transition hover:bg-sky-50/70">
+              <td className="px-4 py-3 text-sm font-medium">
+                <Link
+                  href={`/invoices/${invoice.InvoiceID}`}
+                  className="font-semibold text-sky-700 hover:underline"
+                  title="Open invoice details"
+                >
+                  {invoice.InvoiceNumber}
+                </Link>
+              </td>
+              <td className="px-4 py-3 text-sm font-semibold text-slate-900">{invoice.driverName}</td>
+              <td className="px-4 py-3 text-sm text-slate-600">{invoice.CompanyName}</td>
+              <td className="px-4 py-3 text-sm text-slate-900">${invoice.TotalAmount || 0}</td>
+              <td className="px-4 py-3 text-sm">
+                {String(invoice.InvoiceStatus || "").toLowerCase() === "partial" && (
+                  <DataBadge tone="warning">
+                    ${Number(invoice.TotalPaid ?? 0).toFixed(2)} / ${Number(invoice.Balance ?? (Number(invoice.TotalAmount) || 0)).toFixed(2)}
+                  </DataBadge>
+                )}
+                {String(invoice.InvoiceStatus || "").toLowerCase() !== "partial" && <DataBadge tone="neutral">{String(invoice.InvoiceStatus || "pending").toLowerCase() === "paid" ? "Settled" : "Awaiting payment"}</DataBadge>}
+              </td>
+              <td className="px-4 py-3 text-sm"><DataBadge tone="info">{invoice.Commission || 0}%</DataBadge></td>
+              <td className="px-4 py-3 text-sm">
+                <DataBadge tone={String(invoice.InvoiceStatus || "").toLowerCase() === "paid" ? "success" : String(invoice.InvoiceStatus || "").toLowerCase() === "partial" ? "info" : "warning"}>
+                  {invoice.InvoiceStatus}
+                </DataBadge>
+              </td>
+              <td className="px-4 py-3 text-sm text-slate-600">
+                {new Date(invoice.InvoiceDate).toLocaleDateString()}
+              </td>
+              <td className="px-4 py-3 text-sm">
+                <div className="flex flex-wrap gap-2">
+                  <ActionButton
                     onClick={() => window.open(`/invoices/${invoice.InvoiceID}?print=1`, '_blank')}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-xs"
-                    title="Download / Print"
+                    variant="primary"
+                    icon={<DownloadIcon />}
                   >
                     Download
-                  </button>
+                  </ActionButton>
                   {["pending", "partial"].includes(String(invoice.InvoiceStatus || "").toLowerCase()) && (
-                    <button
+                    <ActionButton
                       onClick={() => openPaymentModal(invoice.InvoiceID)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs"
+                      variant="success"
+                      icon={<PaymentIcon />}
                     >
                       Add Payment
-                    </button>
+                    </ActionButton>
                   )}
                   {String(invoice.InvoiceStatus || "").toLowerCase() === "paid" && (
-                    <button
+                    <ActionButton
                       onClick={() => handleUndoPaid(invoice.InvoiceID)}
-                      className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-xs"
+                      variant="warning"
+                      icon={<PaymentIcon />}
                     >
                       Undo Paid
-                    </button>
+                    </ActionButton>
                   )}
                   {String(invoice.InvoiceStatus || "").toLowerCase() !== "paid" && (
-                    <button
+                    <ActionButton
                       onClick={() => handleDeleteInvoice(invoice.InvoiceID)}
-                      className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs"
+                      variant="danger"
+                      icon={<DeleteIcon />}
                     >
                       Delete
-                    </button>
+                    </ActionButton>
                   )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {!loading && filteredInvoices.length === 0 && (
-          <div className="p-4 text-center text-gray-500">No invoices found</div>
-        )}
-      </div>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </DataTable>
     </div>
   );
 }

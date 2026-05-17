@@ -8,6 +8,7 @@ import {
   getDrivers,
   getLoads,
 } from "../../../utils/api";
+import { DataBadge, DataTable, HeaderCell } from "../../../components/DataTable";
 
 function toYMD(date) {
   const d = new Date(date);
@@ -115,7 +116,7 @@ export default function WeeklySettlementPage() {
     end.setHours(23, 59, 59, 999);
 
     return loads
-          .filter((l) => String(l.driverId ?? l.driverName) === String(selectedDriverId))
+      .filter((l) => String(l.driverId ?? l.driverName) === String(selectedDriverId))
       .filter((l) => String(l.loadStatus || "").toLowerCase() === "delivered")
       .filter((l) => String(l.payment_status || "").toLowerCase() === "unpaid")
       .filter((l) => {
@@ -326,32 +327,30 @@ export default function WeeklySettlementPage() {
           {previewItems.length === 0 ? (
             <div className="text-sm text-gray-600">No eligible loads to invoice.</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-[900px] w-full divide-y divide-gray-200 text-blue-900">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Date</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Load</th>
-                    <th className="px-3 py-3 text-left text-xs font-medium uppercase">Lane</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium uppercase">Load Amount</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium uppercase">Base</th>
-                    <th className="px-3 py-3 text-right text-xs font-medium uppercase">Commission</th>
+            <DataTable minWidthClassName="min-w-[900px] w-full" hint="Swipe to inspect settlement rows">
+              <thead>
+                <tr>
+                  <HeaderCell>Date</HeaderCell>
+                  <HeaderCell>Load</HeaderCell>
+                  <HeaderCell>Lane</HeaderCell>
+                  <HeaderCell align="right">Load Amount</HeaderCell>
+                  <HeaderCell align="right">Base</HeaderCell>
+                  <HeaderCell align="right">Commission</HeaderCell>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200 bg-white text-sm">
+                {previewItems.map((it) => (
+                  <tr key={it.id} className="transition hover:bg-sky-50/70">
+                    <td className="px-3 py-2 text-slate-600">{it.date ? String(it.date).slice(0, 10) : "-"}</td>
+                    <td className="px-3 py-2 font-medium text-sky-700">{it.loadNumber}</td>
+                    <td className="px-3 py-2 text-slate-600">{it.from} to {it.to}</td>
+                    <td className="px-3 py-2 text-right font-medium text-slate-900">{formatMoney(it.loadAmount)}</td>
+                    <td className="px-3 py-2 text-right text-slate-600">{formatMoney(it.baseAmount)} <DataBadge tone="neutral" className="ml-2">{it.base}</DataBadge></td>
+                    <td className="px-3 py-2 text-right font-semibold text-slate-900">{formatMoney(it.commissionAmount)}</td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200 text-sm">
-                  {previewItems.map((it) => (
-                    <tr key={it.id} className="hover:bg-gray-50">
-                      <td className="px-3 py-2">{it.date ? String(it.date).slice(0, 10) : "-"}</td>
-                      <td className="px-3 py-2 font-medium text-indigo-600">{it.loadNumber}</td>
-                      <td className="px-3 py-2">{it.from} to {it.to}</td>
-                      <td className="px-3 py-2 text-right font-medium">{formatMoney(it.loadAmount)}</td>
-                      <td className="px-3 py-2 text-right">{formatMoney(it.baseAmount)} ({it.base})</td>
-                      <td className="px-3 py-2 text-right font-semibold">{formatMoney(it.commissionAmount)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </DataTable>
           )}
         </div>
 

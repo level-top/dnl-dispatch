@@ -14,6 +14,16 @@ import {
   deleteDriverExtraDocument,
   getStoredUser,
 } from "../../utils/api";
+import {
+  ActionButton,
+  DataBadge,
+  DataTable,
+  DeleteIcon,
+  EditIcon,
+  HeaderCell,
+  LinkBadge,
+  TableEmptyState,
+} from "../../components/DataTable";
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState([]);
@@ -525,116 +535,78 @@ export default function DriversPage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">MC #</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Truck Type</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contact</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Join Date</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Sales Agent</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Percentage</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Docs</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+        <DataTable>
+          <thead>
+            <tr>
+              <HeaderCell>Name</HeaderCell>
+              <HeaderCell>MC #</HeaderCell>
+              <HeaderCell>Truck Type</HeaderCell>
+              <HeaderCell>Contact</HeaderCell>
+              <HeaderCell>Email</HeaderCell>
+              <HeaderCell>Join Date</HeaderCell>
+              <HeaderCell>Sales Agent</HeaderCell>
+              <HeaderCell>Percentage</HeaderCell>
+              <HeaderCell>Docs</HeaderCell>
+              <HeaderCell>Actions</HeaderCell>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {drivers.length === 0 ? (
+              <TableEmptyState colSpan={10} title="No drivers found" description="Create a driver to start assigning loads and documents." />
+            ) : drivers.map(driver => (
+              <tr key={driver.id} className="text-slate-900 transition hover:bg-sky-50/70">
+                <td className="px-4 py-3 text-sm whitespace-nowrap">
+                  <Link
+                    href={`/drivers/${driver.id}`}
+                    className="font-semibold text-sky-700 hover:underline"
+                    title="Open driver details"
+                  >
+                    {driver.name}
+                  </Link>
+                </td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{driver.MC_number || "-"}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap"><DataBadge tone="violet">{driver.truckType || "Not set"}</DataBadge></td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{driver.contactNumber || "-"}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{driver.email || "-"}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{driver.joinDate ? String(driver.joinDate).slice(0, 10) : "-"}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">{driver.sales_agent_id || "-"}</td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap"><DataBadge tone="info">{driver.percentage || "0"}%</DataBadge></td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap">
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {driver.driverLicenseFrontPath && (
+                      <LinkBadge href={getDocumentUrl(driver.driverLicenseFrontPath)} title="Driver License Front">DL-F</LinkBadge>
+                    )}
+                    {driver.driverLicenseBackPath && (
+                      <LinkBadge href={getDocumentUrl(driver.driverLicenseBackPath)} title="Driver License Back">DL-B</LinkBadge>
+                    )}
+                    {driver.coiDocumentPath && (
+                      <LinkBadge href={getDocumentUrl(driver.coiDocumentPath)} title="COI">COI</LinkBadge>
+                    )}
+                    {driver.mcAuthorityDocumentPath && (
+                      <LinkBadge href={getDocumentUrl(driver.mcAuthorityDocumentPath)} title="MC Authority">MC</LinkBadge>
+                    )}
+                    {driver.w9DocumentPath && (
+                      <LinkBadge href={getDocumentUrl(driver.w9DocumentPath)} title="W-9">W9</LinkBadge>
+                    )}
+                    {!driver.driverLicenseFrontPath &&
+                      !driver.driverLicenseBackPath &&
+                      !driver.coiDocumentPath &&
+                      !driver.mcAuthorityDocumentPath &&
+                      !driver.w9DocumentPath && (
+                        <DataBadge>No docs</DataBadge>
+                      )}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-sm whitespace-nowrap">
+                  <div className="flex gap-2">
+                    <ActionButton variant="primary" icon={<EditIcon />} onClick={() => handleEdit(driver)}>Edit</ActionButton>
+                    <ActionButton variant="danger" icon={<DeleteIcon />} onClick={() => handleDelete(driver.id)}>Delete</ActionButton>
+                  </div>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {drivers.map(driver => (
-                <tr key={driver.id} className="hover:bg-blue-50 transition text-black">
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <Link
-                      href={`/drivers/${driver.id}`}
-                      className="text-blue-700 hover:underline font-medium"
-                      title="Open driver details"
-                    >
-                      {driver.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap">{driver.MC_number}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{driver.truckType}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{driver.contactNumber}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{driver.email}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{driver.joinDate ? String(driver.joinDate).slice(0, 10) : ""}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{driver.sales_agent_id}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">{driver.percentage}</td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <div className="flex gap-2 items-center">
-                      {driver.driverLicenseFrontPath && (
-                        <a
-                          className="text-blue-700 hover:underline"
-                          href={getDocumentUrl(driver.driverLicenseFrontPath)}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="Driver License Front"
-                        >
-                          DL-F
-                        </a>
-                      )}
-                      {driver.driverLicenseBackPath && (
-                        <a
-                          className="text-blue-700 hover:underline"
-                          href={getDocumentUrl(driver.driverLicenseBackPath)}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="Driver License Back"
-                        >
-                          DL-B
-                        </a>
-                      )}
-                      {driver.coiDocumentPath && (
-                        <a
-                          className="text-blue-700 hover:underline"
-                          href={getDocumentUrl(driver.coiDocumentPath)}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="COI"
-                        >
-                          COI
-                        </a>
-                      )}
-                      {driver.mcAuthorityDocumentPath && (
-                        <a
-                          className="text-blue-700 hover:underline"
-                          href={getDocumentUrl(driver.mcAuthorityDocumentPath)}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="MC Authority"
-                        >
-                          MC
-                        </a>
-                      )}
-                      {driver.w9DocumentPath && (
-                        <a
-                          className="text-blue-700 hover:underline"
-                          href={getDocumentUrl(driver.w9DocumentPath)}
-                          target="_blank"
-                          rel="noreferrer"
-                          title="W-9"
-                        >
-                          W9
-                        </a>
-                      )}
-                      {!driver.driverLicenseFrontPath &&
-                        !driver.driverLicenseBackPath &&
-                        !driver.coiDocumentPath &&
-                        !driver.mcAuthorityDocumentPath &&
-                        !driver.w9DocumentPath && (
-                          <span className="text-gray-400 text-sm">—</span>
-                        )}
-                    </div>
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap flex gap-2">
-                    <button className="bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium px-3 py-1 rounded shadow-sm transition" onClick={() => handleEdit(driver)}>Edit</button>
-                    <button className="bg-red-100 hover:bg-red-200 text-red-700 font-medium px-3 py-1 rounded shadow-sm transition" onClick={() => handleDelete(driver.id)}>Delete</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </DataTable>
       </div>
     </div>
   );

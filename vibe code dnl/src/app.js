@@ -38,11 +38,11 @@ app.use(
   cors(
     corsAllowList.length
       ? {
-          origin: (origin, callback) => {
-            if (!origin) return callback(null, true);
-            return callback(null, corsAllowList.includes(origin));
-          }
+        origin: (origin, callback) => {
+          if (!origin) return callback(null, true);
+          return callback(null, corsAllowList.includes(origin));
         }
+      }
       : undefined
   )
 ); // If CORS_ORIGIN is unset, keep current permissive behavior.

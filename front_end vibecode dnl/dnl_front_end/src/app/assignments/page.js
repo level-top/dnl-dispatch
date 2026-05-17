@@ -7,6 +7,14 @@ import {
   createAssignment,
   deleteAssignment,
 } from "../../utils/api";
+import {
+  ActionButton,
+  DataBadge,
+  DataTable,
+  DeleteIcon,
+  HeaderCell,
+  TableEmptyState,
+} from "../../components/DataTable";
 
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState([]);
@@ -110,9 +118,8 @@ export default function AssignmentsPage() {
             <button
               type="button"
               onClick={() => handleCardClick({ type: "unassigned" })}
-              className={`text-left rounded-2xl border p-4 shadow-sm transition hover:bg-blue-50 ${
-                filter.type === "unassigned" ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white"
-              }`}
+              className={`text-left rounded-2xl border p-4 shadow-sm transition hover:bg-blue-50 ${filter.type === "unassigned" ? "border-blue-400 bg-blue-50" : "border-gray-200 bg-white"
+                }`}
             >
               <div className="text-sm font-medium text-gray-600">Unassigned Drivers</div>
               <div className="text-2xl font-semibold text-blue-900 mt-1">{unassignedDrivers.length}</div>
@@ -128,11 +135,10 @@ export default function AssignmentsPage() {
                 key={d.id}
                 type="button"
                 onClick={() => handleCardClick({ type: "dispatcher", dispatcherId: d.id })}
-                className={`text-left rounded-2xl border p-4 shadow-sm transition hover:bg-blue-50 ${
-                  filter.type === "dispatcher" && String(filter.dispatcherId) === String(d.id)
+                className={`text-left rounded-2xl border p-4 shadow-sm transition hover:bg-blue-50 ${filter.type === "dispatcher" && String(filter.dispatcherId) === String(d.id)
                     ? "border-blue-400 bg-blue-50"
                     : "border-gray-200 bg-white"
-                }`}
+                  }`}
                 title={`Filter by ${d.name}`}
               >
                 <div className="text-sm font-medium text-gray-600 truncate">{d.name}</div>
@@ -164,71 +170,61 @@ export default function AssignmentsPage() {
           </div>
         </form>
         {error && <div className="text-red-600 mb-2 text-sm font-medium">{error}</div>}
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
+        <div>
           {filter.type === "unassigned" ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <DataTable>
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Driver</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                  <HeaderCell>Driver</HeaderCell>
+                  <HeaderCell>Status</HeaderCell>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {unassignedDrivers.map((d) => (
-                  <tr key={d.id} className="hover:bg-blue-50 transition text-black">
-                    <td className="px-4 py-2 whitespace-nowrap">{d.name}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                        Not assigned
-                      </span>
+                  <tr key={d.id} className="text-slate-900 transition hover:bg-sky-50/70">
+                    <td className="px-4 py-3 text-sm whitespace-nowrap font-semibold text-slate-900">{d.name}</td>
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
+                      <DataBadge>Not assigned</DataBadge>
                     </td>
                   </tr>
                 ))}
                 {unassignedDrivers.length === 0 && (
-                  <tr>
-                    <td className="px-4 py-3 text-sm text-gray-600" colSpan={2}>
-                      All drivers are assigned.
-                    </td>
-                  </tr>
+                  <TableEmptyState colSpan={2} title="All drivers are assigned" description="Switch the filter to review current dispatcher assignments." />
                 )}
               </tbody>
-            </table>
+            </DataTable>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <DataTable>
+              <thead>
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Dispatcher</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Driver</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                  <HeaderCell>Dispatcher</HeaderCell>
+                  <HeaderCell>Driver</HeaderCell>
+                  <HeaderCell>Actions</HeaderCell>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-200 bg-white">
                 {filteredAssignments.map(a => (
-                  <tr key={`${a.dispatcherId}-${a.driverId}`} className="hover:bg-blue-50 transition text-black">
-                    <td className="px-4 py-2 whitespace-nowrap">
+                  <tr key={`${a.dispatcherId}-${a.driverId}`} className="text-slate-900 transition hover:bg-sky-50/70">
+                    <td className="px-4 py-3 text-sm whitespace-nowrap text-slate-600">
                       {a.dispatcherName ||
                         dispatchers.find(d => String(d.id) === String(a.dispatcherId))?.name ||
                         a.dispatcherId}
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap">
+                    <td className="px-4 py-3 text-sm whitespace-nowrap font-semibold text-slate-900">
                       {a.driverName ||
                         drivers.find(d => String(d.id) === String(a.driverId))?.name ||
                         a.driverId}
                     </td>
-                    <td className="px-4 py-2 whitespace-nowrap flex gap-2">
-                      <button className="bg-red-100 hover:bg-red-200 text-red-700 font-medium px-3 py-1 rounded shadow-sm transition" onClick={() => handleDelete(a.dispatcherId, a.driverId)}>Delete</button>
+                    <td className="px-4 py-3 text-sm whitespace-nowrap">
+                      <ActionButton variant="danger" icon={<DeleteIcon />} onClick={() => handleDelete(a.dispatcherId, a.driverId)}>Delete</ActionButton>
                     </td>
                   </tr>
                 ))}
                 {filteredAssignments.length === 0 && (
-                  <tr>
-                    <td className="px-4 py-3 text-sm text-gray-600" colSpan={3}>
-                      No assignments found for this filter.
-                    </td>
-                  </tr>
+                  <TableEmptyState colSpan={3} title="No assignments found" description="Try switching the assignment filter to broaden the results." />
                 )}
               </tbody>
-            </table>
+            </DataTable>
           )}
         </div>
       </div>

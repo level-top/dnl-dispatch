@@ -16,6 +16,7 @@ import {
 
 import InvoiceTemplate from "../../../components/InvoiceTemplate";
 import PaymentModal from "../../../components/PaymentModal";
+import { DataBadge, DataTable, HeaderCell } from "../../../components/DataTable";
 
 function formatMoney(value) {
   const num = Number(value) || 0;
@@ -135,10 +136,10 @@ export default function InvoiceDetailPage() {
         setInvoice((prev) =>
           prev
             ? {
-                ...prev,
-                InvoiceStatus: result.InvoiceStatus,
-                PaymentDate: result.PaymentDate ?? prev.PaymentDate,
-              }
+              ...prev,
+              InvoiceStatus: result.InvoiceStatus,
+              PaymentDate: result.PaymentDate ?? prev.PaymentDate,
+            }
             : prev
         );
       }
@@ -195,106 +196,105 @@ export default function InvoiceDetailPage() {
           onSubmit={submitPayment}
         />
 
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <div className="text-2xl font-extrabold text-gray-900">Invoice Details</div>
-          <div className="text-sm text-gray-500">Invoice ID: {String(invoiceId || "-")}</div>
-        </div>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <div className="text-2xl font-extrabold text-gray-900">Invoice Details</div>
+            <div className="text-sm text-gray-500">Invoice ID: {String(invoiceId || "-")}</div>
+          </div>
 
-        <div className="flex gap-2 no-print">
-          <button
-            type="button"
-            onClick={() => router.push("/invoices")}
-            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
-          >
-            Back
-          </button>
-
-          <button
-            type="button"
-            onClick={onDownloadInvoice}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-          >
-            Download / Print
-          </button>
-
-          {!isPaid && (
+          <div className="flex gap-2 no-print">
             <button
               type="button"
-              disabled={loading}
-              onClick={openPaymentModal}
-              className="bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded"
+              onClick={() => router.push("/invoices")}
+              className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
             >
-              Add Payment
+              Back
             </button>
-          )}
-          {isPaid && (
+
             <button
               type="button"
-              disabled={loading}
-              onClick={onUndoPaid}
-              className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded"
+              onClick={onDownloadInvoice}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
             >
-              Undo Paid
+              Download / Print
             </button>
-          )}
-        </div>
-      </div>
 
-      {error && <div className="bg-red-100 text-red-700 p-3 rounded">{error}</div>}
-
-      {loading && <div className="text-sm text-gray-500">Loading…</div>}
-
-      {invoice && (
-        <div className="flex flex-col items-center">
-          <div className="w-full max-w-4xl flex items-center justify-between mb-2 no-print">
-            <div className="text-sm text-gray-600">
-              Status:{" "}
-              <span
-                className={
-                  String(invoice?.InvoiceStatus || "").toLowerCase() === "paid"
-                    ? "px-2 py-1 rounded text-white text-xs font-bold bg-green-600"
-                    : String(invoice?.InvoiceStatus || "").toLowerCase() === "partial"
-                      ? "px-2 py-1 rounded text-white text-xs font-bold bg-blue-600"
-                      : "px-2 py-1 rounded text-white text-xs font-bold bg-yellow-500"
-                }
+            {!isPaid && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={openPaymentModal}
+                className="bg-green-600 hover:bg-green-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded"
               >
-                {invoice?.InvoiceStatus || "-"}
-              </span>
-            </div>
-            <div className="text-xs text-gray-500">
-              Balance: {formatMoney(balance)} (Paid recorded: {formatMoney(totalPaid)})
-            </div>
+                Add Payment
+              </button>
+            )}
+            {isPaid && (
+              <button
+                type="button"
+                disabled={loading}
+                onClick={onUndoPaid}
+                className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-60 text-white font-bold py-2 px-4 rounded"
+              >
+                Undo Paid
+              </button>
+            )}
           </div>
+        </div>
 
-          <div id="invoice-print" className="w-full flex justify-center">
-            <InvoiceTemplate
-              invoice={invoice}
-              driver={driver}
-              company={company}
-              loads={loads}
-              loadingLoads={loading}
-            />
-          </div>
+        {error && <div className="bg-red-100 text-red-700 p-3 rounded">{error}</div>}
 
-          <div className="w-full max-w-4xl mt-6 bg-white rounded-xl shadow-lg border border-gray-100 p-5 no-print">
-            <div className="text-lg font-bold text-gray-900">Recent Audit</div>
-            <div className="text-sm text-gray-500 mb-3">Last changes for this invoice</div>
+        {loading && <div className="text-sm text-gray-500">Loading…</div>}
 
-            {audit.length === 0 ? (
-              <div className="text-sm text-gray-600">No audit entries found.</div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-[900px] w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+        {invoice && (
+          <div className="flex flex-col items-center">
+            <div className="w-full max-w-4xl flex items-center justify-between mb-2 no-print">
+              <div className="text-sm text-gray-600">
+                Status:{" "}
+                <span
+                  className={
+                    String(invoice?.InvoiceStatus || "").toLowerCase() === "paid"
+                      ? "px-2 py-1 rounded text-white text-xs font-bold bg-green-600"
+                      : String(invoice?.InvoiceStatus || "").toLowerCase() === "partial"
+                        ? "px-2 py-1 rounded text-white text-xs font-bold bg-blue-600"
+                        : "px-2 py-1 rounded text-white text-xs font-bold bg-yellow-500"
+                  }
+                >
+                  {invoice?.InvoiceStatus || "-"}
+                </span>
+              </div>
+              <div className="text-xs text-gray-500">
+                Balance: {formatMoney(balance)} (Paid recorded: {formatMoney(totalPaid)})
+              </div>
+            </div>
+
+            <div id="invoice-print" className="w-full flex justify-center">
+              <InvoiceTemplate
+                invoice={invoice}
+                driver={driver}
+                company={company}
+                loads={loads}
+                loadingLoads={loading}
+              />
+            </div>
+
+            <div className="w-full max-w-4xl mt-6 bg-white rounded-xl shadow-lg border border-gray-100 p-5 no-print">
+              <div className="text-lg font-bold text-gray-900">Recent Audit</div>
+              <div className="text-sm text-gray-500 mb-3">Last changes for this invoice</div>
+
+              {audit.length === 0 ? (
+                <div className="text-sm text-gray-600">No audit entries found.</div>
+              ) : (
+                <DataTable minWidthClassName="min-w-[900px] w-full" hint="Swipe to review invoice audit history">
+                  <thead>
                     <tr>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Time</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Action</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">User</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Reason</th>
+                      <HeaderCell>Time</HeaderCell>
+                      <HeaderCell>Action</HeaderCell>
+                      <HeaderCell>User</HeaderCell>
+                      <HeaderCell>Reason</HeaderCell>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-200">
+                  <tbody className="divide-y divide-slate-200 bg-white">
                     {audit.map((a) => {
                       let reason = "-";
                       try {
@@ -305,25 +305,22 @@ export default function InvoiceDetailPage() {
                       }
 
                       return (
-                        <tr key={a.AuditID} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-sm text-gray-800">
+                        <tr key={a.AuditID} className="transition hover:bg-sky-50/70">
+                          <td className="px-4 py-3 text-sm text-slate-600">
                             {formatDate(a.PerformedAt)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-800">{a.Action || "-"}</td>
-                          <td className="px-4 py-3 text-sm text-gray-800">
-                            {a.PerformedByUserID ?? "-"}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-800">{reason}</td>
+                          <td className="px-4 py-3 text-sm"><DataBadge tone="info">{a.Action || "-"}</DataBadge></td>
+                          <td className="px-4 py-3 text-sm text-slate-600">{a.PerformedByUserID ?? "-"}</td>
+                          <td className="px-4 py-3 text-sm text-slate-600">{reason}</td>
                         </tr>
                       );
                     })}
                   </tbody>
-                </table>
-              </div>
-            )}
+                </DataTable>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </div>
     </>
   );

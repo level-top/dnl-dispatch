@@ -19,6 +19,15 @@ import {
 import { formatDateTime } from "../../components/formatDateTime";
 import LoadDetailsPopup from "../../components/LoadDetailsPopup";
 import LoadTimeAlertIcon from "../../components/LoadTimeAlertIcon";
+import {
+  ActionButton,
+  DataBadge,
+  DataTable,
+  DeleteIcon,
+  EditIcon,
+  HeaderCell,
+  TableEmptyState,
+} from "../../components/DataTable";
 
 
 export default function LoadsPage() {
@@ -31,20 +40,20 @@ export default function LoadsPage() {
   const [drivers, setDrivers] = useState([]);
   const [assignedDrivers, setAssignedDrivers] = useState([]);
   const [selectedLoad, setSelectedLoad] = useState(null);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [now, setNow] = useState(() => new Date());
+  const [searchQuery, setSearchQuery] = useState("");
+  const [now, setNow] = useState(() => new Date());
 
-	const [sortBy, setSortBy] = useState("pickup");
-	const [sortOrder, setSortOrder] = useState("asc");
+  const [sortBy, setSortBy] = useState("pickup");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const visibleLoads = isDispatcher
     ? loads.filter((l) => String(l?.dispatcherId || "") === String(me?.id || ""))
     : loads;
 
   const inProgressLoads = visibleLoads.filter((l) => {
-		const status = String(l?.loadStatus || "").toLowerCase();
-		return status === "booked" || status === "pickedup";
-	});
+    const status = String(l?.loadStatus || "").toLowerCase();
+    return status === "booked" || status === "pickedup";
+  });
 
   const toWordString = (value) => {
     const str = String(value ?? "");
@@ -264,47 +273,47 @@ export default function LoadsPage() {
 
   const handleSubmit = async e => {
     e.preventDefault();
-    
+
     // Validation
     const pickupDate = new Date(form.pickedUp_dateTime);
     const dropoffDate = new Date(form.dropOff_dateTime);
-    
+
     if (pickupDate >= dropoffDate) {
       setError("Pickup date/time must be before dropoff date/time");
       return;
     }
-    
+
     const amount = parseFloat(form.loadAmount);
     if (amount <= 0) {
       setError("Load amount must be greater than 0");
       return;
     }
-    
+
     const miles = parseFloat(form.miles);
     if (miles <= 0) {
       setError("Miles must be greater than 0");
       return;
     }
-    
+
     // Check load number uniqueness
-    const duplicateLoadNumber = loads.find(l => 
+    const duplicateLoadNumber = loads.find(l =>
       l.loadNumber === form.loadNumber && l.id !== editingId
     );
     if (duplicateLoadNumber) {
       setError("Load number already exists");
       return;
     }
-    
+
     if (!form.loadFrom?.trim() || form.loadFrom.length < 3) {
       setError("Load From location must be at least 3 characters");
       return;
     }
-    
+
     if (!form.loadTo?.trim() || form.loadTo.length < 3) {
       setError("Load To location must be at least 3 characters");
       return;
     }
-    
+
     setLoading(true);
     setError("");
     try {
@@ -339,7 +348,7 @@ export default function LoadsPage() {
       const minutes = String(date.getMinutes()).padStart(2, '0');
       return `${year}-${month}-${day}T${hours}:${minutes}`;
     };
-    
+
     setForm({
       pickedUp_dateTime: formatForInput(load.pickedUp_dateTime),
       dropOff_dateTime: formatForInput(load.dropOff_dateTime),
@@ -364,7 +373,7 @@ export default function LoadsPage() {
       expectedPaymentDate: load.expectedPaymentDate || "",
     });
     setEditingId(load.id);
-    
+
     // Fetch assigned drivers for the selected dispatcher
     if (!isDispatcher && load.dispatcherId) {
       try {
@@ -374,7 +383,7 @@ export default function LoadsPage() {
         setAssignedDrivers([]);
       }
     }
-    
+
     window.scrollTo(0, 0);
   };
 
@@ -457,21 +466,21 @@ export default function LoadsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-2 sm:px-4">
-    <LoadDetailsPopup
-      open={!!selectedLoad}
-      onClose={() => setSelectedLoad(null)}
-      load={selectedLoad}
-      driverName={selectedDriver?.name}
-      dispatcherName={dispatcherDisplayName}
-      onEdit={(load) => {
-        setSelectedLoad(null);
-        if (load) handleEdit(load);
-      }}
-      onDelete={(load) => {
-        setSelectedLoad(null);
-        if (load?.id) handleDelete(load.id);
-      }}
-    />
+      <LoadDetailsPopup
+        open={!!selectedLoad}
+        onClose={() => setSelectedLoad(null)}
+        load={selectedLoad}
+        driverName={selectedDriver?.name}
+        dispatcherName={dispatcherDisplayName}
+        onEdit={(load) => {
+          setSelectedLoad(null);
+          if (load) handleEdit(load);
+        }}
+        onDelete={(load) => {
+          setSelectedLoad(null);
+          if (load?.id) handleDelete(load.id);
+        }}
+      />
       <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 mt-2">
         <h1 className="text-2xl font-semibold text-blue-900 mb-6 tracking-tight">Loads</h1>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -573,7 +582,7 @@ export default function LoadsPage() {
               <option value="canceled">Canceled</option>
             </select>
           </div>
-          
+
           {/* Equipment & Load Details */}
           <div className="flex flex-col">
             <label htmlFor="equipmentType" className="mb-1 text-sm font-medium text-gray-700">Equipment Type (optional)</label>
@@ -599,7 +608,7 @@ export default function LoadsPage() {
               <option value="LTL">Less Than Truckload (LTL)</option>
             </select>
           </div>
-          
+
           {/* Payment Terms */}
           <div className="flex flex-col">
             <label htmlFor="paymentTerms" className="mb-1 text-sm font-medium text-gray-700">Payment Terms (optional)</label>
@@ -620,7 +629,7 @@ export default function LoadsPage() {
             <label htmlFor="expectedPaymentDate" className="mb-1 text-sm font-medium text-gray-700">Expected Payment Date (optional)</label>
             <input id="expectedPaymentDate" name="expectedPaymentDate" value={form.expectedPaymentDate} onChange={handleChange} className="text-gray-500 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" type="date" />
           </div>
-          
+
           {/* Documentation Status */}
           <div className="flex flex-col">
             <label htmlFor="bolStatus" className="mb-1 text-sm font-medium text-gray-700">BOL Status</label>
@@ -646,11 +655,11 @@ export default function LoadsPage() {
               <option value="submitted">Submitted</option>
             </select>
           </div>
-          
+
           {/* Document Upload Section */}
           <div className="md:col-span-3 mt-4 mb-2">
             <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
-              Upload Documents 
+              Upload Documents
               {!editingId && <span className="text-sm text-gray-500 font-normal ml-2">(Save load first to enable uploads)</span>}
             </h3>
           </div>
@@ -759,138 +768,128 @@ export default function LoadsPage() {
               )}
             </div>
           </div>
-          
+
           <div className="flex gap-2 mt-2 md:col-span-3">
             <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition disabled:opacity-60" disabled={loading}>
               {editingId ? "Update" : "Add"} Load
             </button>
             {editingId && (
-              <button type="button" className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-2 rounded-lg shadow transition" onClick={() => { setForm({
-                pickedUp_dateTime: "",
-                dropOff_dateTime: "",
-                driverName: "",
-                dispatcherId: "",
-                loadFrom: "",
-                loadTo: "",
-                brokerCompany: "",
-                brokerMC: "",
-                brokerName: "",
-                loadNumber: "",
-                loadAmount: "",
-                miles: "",
-                loadStatus: "booked",
-                equipmentType: "",
-                loadCategory: "",
-                paymentTerms: "",
-                quickPayFee: "",
-                bolStatus: "pending",
-                podStatus: "pending",
-                rateConfStatus: "pending",
-                expectedPaymentDate: "",
-              }); setEditingId(null); setAssignedDrivers([]); }}>
+              <button type="button" className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-2 rounded-lg shadow transition" onClick={() => {
+                setForm({
+                  pickedUp_dateTime: "",
+                  dropOff_dateTime: "",
+                  driverName: "",
+                  dispatcherId: "",
+                  loadFrom: "",
+                  loadTo: "",
+                  brokerCompany: "",
+                  brokerMC: "",
+                  brokerName: "",
+                  loadNumber: "",
+                  loadAmount: "",
+                  miles: "",
+                  loadStatus: "booked",
+                  equipmentType: "",
+                  loadCategory: "",
+                  paymentTerms: "",
+                  quickPayFee: "",
+                  bolStatus: "pending",
+                  podStatus: "pending",
+                  rateConfStatus: "pending",
+                  expectedPaymentDate: "",
+                }); setEditingId(null); setAssignedDrivers([]);
+              }}>
                 Cancel
               </button>
             )}
           </div>
         </form>
         {error && <div className="text-red-600 mb-2 text-sm font-medium">{error}</div>}
-    <div className="mb-3">
-      <label htmlFor="loadsSearch" className="block mb-1 text-sm font-medium text-gray-700">Search</label>
-      <input
-        id="loadsSearch"
-        type="text"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search any load field (load #, broker, route, status, docs, etc.)"
-        className="w-full text-gray-700 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-      />
-    </div>
-        <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-					<button type="button" onClick={() => toggleSort("pickup")} className="flex items-center gap-2">
-						<span>Pickup</span>
-						<span className="text-gray-400">{sortIcon("pickup")}</span>
-					</button>
-				</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-					<button type="button" onClick={() => toggleSort("delivery")} className="flex items-center gap-2">
-						<span>Delivery</span>
-						<span className="text-gray-400">{sortIcon("delivery")}</span>
-					</button>
-				</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Driver</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Load #</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Route</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Dispatcher</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-					<button type="button" onClick={() => toggleSort("amount")} className="flex items-center gap-2">
-						<span>Amount</span>
-						<span className="text-gray-400">{sortIcon("amount")}</span>
-					</button>
-				</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-        {sortedLoads.length === 0 ? (
-          <tr>
-            <td className="px-4 py-6 text-sm text-gray-500" colSpan={9}>
-              No loads found.
-            </td>
-          </tr>
-        ) : (
-          sortedLoads.map(load => {
+        <div className="mb-3">
+          <label htmlFor="loadsSearch" className="block mb-1 text-sm font-medium text-gray-700">Search</label>
+          <input
+            id="loadsSearch"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search any load field (load #, broker, route, status, docs, etc.)"
+            className="w-full text-gray-700 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+        <DataTable>
+          <thead>
+            <tr>
+              <HeaderCell sortable onClick={() => toggleSort("pickup")} sortDirection={sortBy === "pickup" ? sortOrder : undefined}>Pickup</HeaderCell>
+              <HeaderCell sortable onClick={() => toggleSort("delivery")} sortDirection={sortBy === "delivery" ? sortOrder : undefined}>Delivery</HeaderCell>
+              <HeaderCell>Driver</HeaderCell>
+              <HeaderCell>Load #</HeaderCell>
+              <HeaderCell>Route</HeaderCell>
+              <HeaderCell>Dispatcher</HeaderCell>
+              <HeaderCell sortable onClick={() => toggleSort("amount")} sortDirection={sortBy === "amount" ? sortOrder : undefined}>Amount</HeaderCell>
+              <HeaderCell>Status</HeaderCell>
+              <HeaderCell>Actions</HeaderCell>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {sortedLoads.length === 0 ? (
+              <TableEmptyState colSpan={9} title="No loads found" description="Try widening the date range or clearing a filter." />
+            ) : (
+              sortedLoads.map(load => {
                 let pickedUpDate = new Date(load.pickedUp_dateTime).toLocaleString();
                 let dropOffDate = new Date(load.dropOff_dateTime).toLocaleString();
                 let dateTime = new Date(load.dateTime).toLocaleString();
-				const driver = drivers.find(d => String(d.id) === String(load.driverId ?? load.driverName));
-				const dispatcher = users.find(u => String(u.id) === String(load.dispatcherId));
+                const driver = drivers.find(d => String(d.id) === String(load.driverId ?? load.driverName));
+                const dispatcher = users.find(u => String(u.id) === String(load.dispatcherId));
                 return (
-                  <tr key={load.id} className="hover:bg-blue-50 transition text-black cursor-pointer" onClick={() => setSelectedLoad(load)}>
-					<td className="px-4 py-2 whitespace-nowrap">
-						<div className="flex items-center gap-2">
-							<LoadTimeAlertIcon pickupAt={load.pickedUp_dateTime} deliveryAt={load.dropOff_dateTime} now={now} />
-							<span>{pickedUpDate}</span>
-						</div>
-					</td>
-					<td className="px-4 py-2 whitespace-nowrap">{dropOffDate}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{driver?.name || (load.driverId ?? load.driverName)}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{load.loadNumber}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-					<div className="text-sm text-gray-900">{load.loadFrom}</div>
-					<div className="text-xs text-gray-500">→ {load.loadTo}</div>
-				</td>
-                    <td className="px-4 py-2 whitespace-nowrap">{dispatcher?.name || load.dispatcherId}</td>
-                    <td className="px-4 py-2 whitespace-nowrap">
-					<div>${load.loadAmount}</div>
-					<div className="text-xs text-gray-500">{load.miles ? `${load.miles} mi` : "-"}</div>
-				</td>
-                  <td className="px-4 py-2 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded ${
-                      load.loadStatus === 'delivered' ? 'bg-green-100 text-green-700' :
-                      load.loadStatus === 'pickedUp' ? 'bg-blue-100 text-blue-700' :
-                      load.loadStatus === 'issue' ? 'bg-yellow-100 text-yellow-700' :
-                      load.loadStatus === 'canceled' ? 'bg-red-100 text-red-700' :
-                      'bg-yellow-100 text-yellow-700'
-                    }`}>{load.loadStatus}</span>
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-					<div className="flex gap-2">
-						<button className="bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium px-3 py-1 rounded shadow-sm transition" onClick={() => handleEdit(load)}>Edit</button>
-						<button className="bg-red-100 hover:bg-red-200 text-red-700 font-medium px-3 py-1 rounded shadow-sm transition" onClick={() => handleDelete(load.id)}>Delete</button>
-					</div>
-                  </td>
-                </tr>
+                  <tr key={load.id} className="cursor-pointer text-slate-900 transition hover:bg-sky-50/70" onClick={() => setSelectedLoad(load)}>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm">
+                      <div className="flex items-center gap-2 font-medium">
+                        <LoadTimeAlertIcon pickupAt={load.pickedUp_dateTime} deliveryAt={load.dropOff_dateTime} now={now} />
+                        <span>{pickedUpDate}</span>
+                      </div>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">{dropOffDate}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm font-semibold text-slate-900">{driver?.name || (load.driverId ?? load.driverName)}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm">
+                      <div className="font-semibold text-slate-900">{load.loadNumber}</div>
+                      <div className="text-xs text-slate-500">Created {dateTime}</div>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap text-sm">
+                      <div className="font-medium text-slate-900">{load.loadFrom}</div>
+                      <div className="text-xs text-slate-500">→ {load.loadTo}</div>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-slate-600">{dispatcher?.name || load.dispatcherId}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm">
+                      <div className="font-semibold text-slate-900">${load.loadAmount}</div>
+                      <div className="text-xs text-slate-500">{load.miles ? `${load.miles} mi` : "Mileage pending"}</div>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm">
+                      <DataBadge
+                        tone={
+                          load.loadStatus === "delivered"
+                            ? "success"
+                            : load.loadStatus === "pickedUp"
+                              ? "info"
+                              : load.loadStatus === "canceled"
+                                ? "danger"
+                                : "warning"
+                        }
+                      >
+                        {load.loadStatus}
+                      </DataBadge>
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex gap-2">
+                        <ActionButton variant="primary" icon={<EditIcon />} onClick={() => handleEdit(load)}>Edit</ActionButton>
+                        <ActionButton variant="danger" icon={<DeleteIcon />} onClick={() => handleDelete(load.id)}>Delete</ActionButton>
+                      </div>
+                    </td>
+                  </tr>
                 );
-					})
-				)}
-            </tbody>
-          </table>
-        </div>
+              })
+            )}
+          </tbody>
+        </DataTable>
       </div>
     </div>
   );
