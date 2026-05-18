@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "Drive Now Logistics",
   description: "Dispatch management system",
+  icons: {
+    icon: "/DNL_logo.png",
+    shortcut: "/DNL_logo.png",
+    apple: "/DNL_logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {

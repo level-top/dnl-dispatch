@@ -5,7 +5,7 @@ const { pool } = require('../db');
 // Get all company details
 exports.getAllCompanyDetails = async (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM CompanyDetails');
+    const [rows] = await pool.query('SELECT * FROM CompanyDetails ORDER BY CompanyID DESC');
     res.json(rows);
   } catch (err) {
     res.status(500).json({ error: err.message });

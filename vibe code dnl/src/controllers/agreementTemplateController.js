@@ -29,7 +29,7 @@ exports.getAgreementTemplate = async (req, res) => {
     );
 
     const [companyRows] = await pool.query(
-      'SELECT CompanyID, CompanyName, Address, Phone, Email, LogoURL FROM CompanyDetails ORDER BY CompanyID ASC LIMIT 1'
+      'SELECT CompanyID, CompanyName, Address, Phone, Email, LogoURL FROM CompanyDetails ORDER BY CompanyID DESC LIMIT 1'
     );
 
     res.json({

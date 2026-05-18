@@ -221,7 +221,7 @@ exports.getAgreementByToken = async (req, res) => {
     const template = templateRows[0] || {};
 
     const [companyRows] = await pool.query(
-      'SELECT CompanyName, Address, Phone, Email, LogoURL FROM CompanyDetails ORDER BY CompanyID ASC LIMIT 1'
+      'SELECT CompanyName, Address, Phone, Email, LogoURL FROM CompanyDetails ORDER BY CompanyID DESC LIMIT 1'
     );
     const company = companyRows[0] || {};
 
@@ -320,7 +320,7 @@ exports.signAgreementByToken = async (req, res) => {
     const template = templateRows[0] || {};
 
     const [companyRows] = await pool.query(
-      'SELECT CompanyName, Address, Phone, Email, LogoURL FROM CompanyDetails ORDER BY CompanyID ASC LIMIT 1'
+      'SELECT CompanyName, Address, Phone, Email, LogoURL FROM CompanyDetails ORDER BY CompanyID DESC LIMIT 1'
     );
     const company = companyRows[0] || {};
 
