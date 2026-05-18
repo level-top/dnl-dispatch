@@ -26,5 +26,11 @@ jobs:
           script: |
             export REPO_DIR="/var/www/dnl-dispatch"
             cd "$REPO_DIR"
-            chmod +x scripts/deploy-vps.sh
-            ./scripts/deploy-vps.sh
+            git pull --ff-only origin main
+            if [ -f scripts/deploy-vps.sh ]; then
+              chmod +x scripts/deploy-vps.sh
+              ./scripts/deploy-vps.sh
+            else
+              docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build --remove-orphans
+              docker compose -f docker-compose.yml -f docker-compose.vps.yml ps
+            fi
