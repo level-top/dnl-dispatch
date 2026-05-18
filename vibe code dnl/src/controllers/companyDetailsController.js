@@ -27,7 +27,7 @@ exports.getCompanyDetailsById = async (req, res) => {
 exports.createCompanyDetails = async (req, res) => {
   try {
     const { CompanyName, Address, Phone, Email, BankName, IBAN, AccountHolder, LogoURL } = req.body;
-    
+
     if (!CompanyName) {
       return res.status(400).json({ error: 'CompanyName is required' });
     }
@@ -56,12 +56,12 @@ exports.createCompanyDetails = async (req, res) => {
 exports.updateCompanyDetails = async (req, res) => {
   try {
     const { CompanyName, Address, Phone, Email, BankName, IBAN, AccountHolder, LogoURL } = req.body;
-    
+
     const [result] = await pool.query(
       'UPDATE CompanyDetails SET CompanyName=?, Address=?, Phone=?, Email=?, BankName=?, IBAN=?, AccountHolder=?, LogoURL=? WHERE CompanyID=?',
       [CompanyName, Address, Phone, Email, BankName, IBAN, AccountHolder, LogoURL, req.params.id]
     );
-    
+
     if (result.affectedRows === 0) return res.status(404).json({ error: 'Company details not found' });
     res.json({
       CompanyID: req.params.id,
