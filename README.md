@@ -189,6 +189,37 @@ git pull
 docker compose -f docker-compose.yml -f docker-compose.vps.yml up -d --build
 ```
 
+### 9. Optional GitHub Actions CI/CD
+
+If you want every push to `main` to deploy automatically to the VPS, this repo includes a workflow at `.github/workflows/deploy.yml`.
+
+What it does:
+- connects to your VPS over SSH
+- runs `scripts/deploy-vps.sh`
+- pulls the latest `main`
+- rebuilds and restarts the Docker stack with `docker-compose.vps.yml`
+
+Server preparation:
+
+```bash
+cd /var/www/dnl-dispatch
+chmod +x scripts/deploy-vps.sh
+```
+
+Important:
+- the VPS deploy user must have access to Docker without interactive sudo
+- the repo on the VPS must already be cloned at `/var/www/dnl-dispatch`
+- `docker-compose.vps.yml` and `.env` must already exist on the VPS
+
+Add these GitHub repository secrets:
+- `VPS_HOST` : your server IP or hostname
+- `VPS_USER` : the Linux user used for deployment
+- `VPS_SSH_KEY` : the private SSH key for that user
+- `VPS_PORT` : optional, defaults to `22`
+- `VPS_APP_DIR` : optional, defaults to `/var/www/dnl-dispatch`
+
+Then every push to `main` will deploy automatically. You can also run it manually from the GitHub Actions tab with `workflow_dispatch`.
+
 Production notes:
 - The MySQL container initializes from the SQL files in `db/` only on the first boot of a fresh database volume.
 - Uploaded files are stored in the `uploads_data` volume and survive container rebuilds.

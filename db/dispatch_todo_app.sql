@@ -44,7 +44,7 @@ CREATE TABLE `CompanyDetails` (
 --
 
 INSERT INTO `CompanyDetails` (`CompanyID`, `CompanyName`, `Address`, `Phone`, `Email`, `BankName`, `IBAN`, `AccountHolder`, `LogoURL`) VALUES
-(1, 'Demo Dispatch Co', '123 Demo Street', '+1-555-0100', 'ops@example.com', 'Demo Bank', 'DEMO-IBAN-0001', 'Demo Operations', 'http://localhost:3000/DNL_logo.png');
+(1, 'Drive Now Logistics', 'Hafizabad', '03433637754', 'info@dnl7.com', 'Allied Bank Limited', 'PK66ABPA0010094799130015', 'GM', 'http://localhost:3000/DNL_logo.png');
 
 -- --------------------------------------------------------
 
@@ -91,8 +91,8 @@ CREATE TABLE `Drivers` (
 --
 
 INSERT INTO `Drivers` (`id`, `name`, `MC_number`, `truckType`, `contactNumber`, `email`, `joinDate`, `sales_agent_id`, `percentage`) VALUES
-(1, 'Demo Driver One', 'MC-DEMO-001', 'hotshot', '+1-555-0201', 'driver.one@example.com', '2025-08-12', 1, 5),
-(2, 'Demo Driver Two', 'MC-DEMO-002', 'box truck', '+1-555-0202', 'driver.two@example.com', '2025-08-12', 1, 5);
+(1, 'Driver One', 'MC-DNL-001', 'hotshot', '+1-555-0201', 'driver.one@dnl7.com', '2025-08-12', 1, 5),
+(2, 'Driver Two', 'MC-DNL-002', 'box truck', '+1-555-0202', 'driver.two@dnl7.com', '2025-08-12', 1, 5);
 
 -- --------------------------------------------------------
 
@@ -181,10 +181,10 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`id`, `name`, `userName`, `password`, `role`, `contactNumber`, `email`) VALUES
-(1, 'Demo Admin', 'admin', '$2b$10$v0z/XOdC0GLutXhZC0KU2ucVwVQjHmXQK1YTegKcNav.FC8jxm7tq', 'admin', '+1-555-0301', 'admin@example.com'),
-(2, 'Demo Dispatcher', 'dispatcher1', '$2b$10$zWbVYfrYVsS/86.nCTvKB.1rSQ3cj0mIvxxTuW9C8QMrCPJ0tVzpm', 'dispatcher', '+1-555-0302', 'dispatcher1@example.com'),
-(3, 'Demo Dispatcher Two', 'dispatcher2', '$2b$10$bt8iUTC4pSZeqJb6xbg0B.HsFZgDYRvETEsdkdNj3gVj4hWLNK/J6', 'dispatcher', '+1-555-0303', 'dispatcher2@example.com'),
-(4, 'Demo Sales', 'sales1', '$2b$10$G/2oYEQfMFGns0NWiA9Fy.oDsv9P8a7KYzbRx/DjJEg/Ep8DIjrRe', 'sales', '+1-555-0304', 'sales1@example.com');
+(1, 'Drive Now Admin', 'admin', '$2b$10$v0z/XOdC0GLutXhZC0KU2ucVwVQjHmXQK1YTegKcNav.FC8jxm7tq', 'admin', '+1-555-0301', 'admin@dnl7.com'),
+(2, 'Dispatcher One', 'dispatcher1', '$2b$10$zWbVYfrYVsS/86.nCTvKB.1rSQ3cj0mIvxxTuW9C8QMrCPJ0tVzpm', 'dispatcher', '+1-555-0302', 'dispatcher1@dnl7.com'),
+(3, 'Dispatcher Two', 'dispatcher2', '$2b$10$bt8iUTC4pSZeqJb6xbg0B.HsFZgDYRvETEsdkdNj3gVj4hWLNK/J6', 'dispatcher', '+1-555-0303', 'dispatcher2@dnl7.com'),
+(4, 'Sales One', 'sales1', '$2b$10$G/2oYEQfMFGns0NWiA9Fy.oDsv9P8a7KYzbRx/DjJEg/Ep8DIjrRe', 'sales', '+1-555-0304', 'sales1@dnl7.com');
 
 --
 -- Indexes for dumped tables
