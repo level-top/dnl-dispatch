@@ -181,7 +181,7 @@ CREATE TABLE `Users` (
 --
 
 INSERT INTO `Users` (`id`, `name`, `userName`, `password`, `role`, `contactNumber`, `email`) VALUES
-(1, 'Drive Now Admin', 'admin', '$2b$10$v0z/XOdC0GLutXhZC0KU2ucVwVQjHmXQK1YTegKcNav.FC8jxm7tq', 'admin', '+1-555-0301', 'admin@dnl7.com'),
+(1, 'Drive Now Admin', 'admin', '$2b$10$Ye9XR1VhXoz68.EKoUIn6.N5mQpP5WvGLaUmWNQJG1vp.hb7nZepm', 'admin', '+1-555-0301', 'admin@dnl7.com'),
 (2, 'Dispatcher One', 'dispatcher1', '$2b$10$zWbVYfrYVsS/86.nCTvKB.1rSQ3cj0mIvxxTuW9C8QMrCPJ0tVzpm', 'dispatcher', '+1-555-0302', 'dispatcher1@dnl7.com'),
 (3, 'Dispatcher Two', 'dispatcher2', '$2b$10$bt8iUTC4pSZeqJb6xbg0B.HsFZgDYRvETEsdkdNj3gVj4hWLNK/J6', 'dispatcher', '+1-555-0303', 'dispatcher2@dnl7.com'),
 (4, 'Sales One', 'sales1', '$2b$10$G/2oYEQfMFGns0NWiA9Fy.oDsv9P8a7KYzbRx/DjJEg/Ep8DIjrRe', 'sales', '+1-555-0304', 'sales1@dnl7.com');

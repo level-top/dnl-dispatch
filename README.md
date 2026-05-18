@@ -4,6 +4,18 @@ Monorepo with:
 - Frontend: Next.js app in `front_end vibecode dnl/dnl_front_end/`
 - Backend: Express/MySQL API in `vibe code dnl/`
 
+## Default Dev Login
+
+For a fresh Docker setup that initializes a new MySQL volume from `db/dispatch_todo_app.sql`, the seeded admin login is:
+
+- Username: `admin`
+- Password: `admin`
+
+Important:
+- this only applies to a fresh database initialized from the seed SQL
+- if the MySQL volume already exists, Docker will keep the existing data instead of re-importing the seed
+- change the admin password after first login in any shared or non-local environment
+
 ## Smoke check (recommended)
 
 Runs frontend lint/build/audit, starts `next start`, probes a couple pages, then does backend audit, starts the API, and probes auth behavior.
