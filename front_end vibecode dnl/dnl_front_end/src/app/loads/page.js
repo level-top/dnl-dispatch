@@ -693,6 +693,19 @@ export default function LoadsPage() {
             </select>
           </div>
 
+          <div className="flex gap-2 mt-2 md:col-span-3">
+            {!editingId && (
+              <button
+                type="submit"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition disabled:opacity-60"
+                disabled={loading}
+                onClick={() => setSubmitMode("save-and-continue")}
+              >
+                Save and Upload Documents
+              </button>
+            )}
+          </div>
+
           {/* Document Upload Section */}
           <div className="md:col-span-3 mt-4 mb-2">
             <h3 className="text-lg font-semibold text-gray-700 border-b pb-2">
@@ -815,16 +828,6 @@ export default function LoadsPage() {
             >
               {editingId ? "Update" : "Add"} Load
             </button>
-            {!editingId && (
-              <button
-                type="submit"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition disabled:opacity-60"
-                disabled={loading}
-                onClick={() => setSubmitMode("save-and-continue")}
-              >
-                Save Load
-              </button>
-            )}
             {editingId && (
               <button type="button" className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-2 rounded-lg shadow transition" onClick={() => {
                 setForm({
