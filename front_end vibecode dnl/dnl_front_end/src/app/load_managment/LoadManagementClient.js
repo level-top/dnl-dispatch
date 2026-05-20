@@ -325,7 +325,7 @@ export default function LoadManagementClient() {
 				onEdit={(load) => {
 					if (!load?.id) return;
 					setSelectedLoad(null);
-					router.push(`/load_managment/${load.id}`);
+					router.push(`/loads?loadId=${load.id}`);
 				}}
 				onDelete={async (load) => {
 					if (!load?.id) return;
@@ -351,8 +351,8 @@ export default function LoadManagementClient() {
 								key={p.key}
 								onClick={() => setPeriodKey(p.key)}
 								className={`px-4 py-2 rounded-lg font-medium transition border ${periodKey === p.key
-										? "bg-indigo-600 text-white border-indigo-600"
-										: "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
+									? "bg-indigo-600 text-white border-indigo-600"
+									: "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
 									}`}
 							>
 								{p.label}
@@ -525,9 +525,9 @@ export default function LoadManagementClient() {
 						type="button"
 						onClick={toggleInvoiceReadyFilter}
 						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "delivered" &&
-								String(filterPaymentStatus || "").toLowerCase() === "unpaid"
-								? "border-blue-400 bg-blue-50"
-								: "border-gray-200 bg-gray-50"
+							String(filterPaymentStatus || "").toLowerCase() === "unpaid"
+							? "border-blue-400 bg-blue-50"
+							: "border-gray-200 bg-gray-50"
 							}`}
 						title="Filter to delivered + unpaid"
 					>
@@ -539,8 +539,8 @@ export default function LoadManagementClient() {
 						type="button"
 						onClick={() => togglePaymentStatusFilter("invoiced")}
 						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterPaymentStatus || "").toLowerCase() === "invoiced"
-								? "border-blue-400 bg-blue-50"
-								: "border-gray-200 bg-gray-50"
+							? "border-blue-400 bg-blue-50"
+							: "border-gray-200 bg-gray-50"
 							}`}
 						title="Filter payment status: invoiced"
 					>
@@ -552,8 +552,8 @@ export default function LoadManagementClient() {
 						type="button"
 						onClick={() => togglePaymentStatusFilter("paid")}
 						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterPaymentStatus || "").toLowerCase() === "paid"
-								? "border-blue-400 bg-blue-50"
-								: "border-gray-200 bg-gray-50"
+							? "border-blue-400 bg-blue-50"
+							: "border-gray-200 bg-gray-50"
 							}`}
 						title="Filter payment status: paid"
 					>
@@ -565,8 +565,8 @@ export default function LoadManagementClient() {
 						type="button"
 						onClick={() => toggleStatusFilter("booked")}
 						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "booked"
-								? "border-blue-400 bg-blue-50"
-								: "border-gray-200 bg-gray-50"
+							? "border-blue-400 bg-blue-50"
+							: "border-gray-200 bg-gray-50"
 							}`}
 					>
 						<div className="text-xs text-gray-500">Booked</div>
@@ -577,8 +577,8 @@ export default function LoadManagementClient() {
 						type="button"
 						onClick={() => toggleStatusFilter("delivered")}
 						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "delivered"
-								? "border-blue-400 bg-blue-50"
-								: "border-gray-200 bg-gray-50"
+							? "border-blue-400 bg-blue-50"
+							: "border-gray-200 bg-gray-50"
 							}`}
 					>
 						<div className="text-xs text-gray-500">Delivered</div>
@@ -589,8 +589,8 @@ export default function LoadManagementClient() {
 						type="button"
 						onClick={() => toggleStatusFilter("canceled")}
 						className={`rounded-lg border p-2 text-left transition hover:bg-blue-50 ${String(filterStatus || "").toLowerCase() === "canceled"
-								? "border-blue-400 bg-blue-50"
-								: "border-gray-200 bg-gray-50"
+							? "border-blue-400 bg-blue-50"
+							: "border-gray-200 bg-gray-50"
 							}`}
 					>
 						<div className="text-xs text-gray-500">Canceled</div>

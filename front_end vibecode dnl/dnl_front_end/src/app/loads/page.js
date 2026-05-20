@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   getLoads,
   createLoad,
@@ -31,6 +32,7 @@ import {
 
 
 export default function LoadsPage() {
+  const router = useRouter();
   const [me] = useState(() => getStoredUser());
   const role = String(me?.role || "").toLowerCase();
   const isDispatcher = role === "dispatcher";
@@ -180,6 +182,7 @@ export default function LoadsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [extraDocuments, setExtraDocuments] = useState([]);
+  const [submitMode, setSubmitMode] = useState("save-and-close");
 
   const fetchExtraDocuments = async (loadId) => {
     if (!loadId) {
@@ -271,8 +274,7 @@ export default function LoadsPage() {
     }
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
+  const persistLoad = async ({ keepEditingAfterCreate = false } = {}) => {
 
     // Validation
     const pickupDate = new Date(form.pickedUp_dateTime);
@@ -323,17 +325,37 @@ export default function LoadsPage() {
 
       if (editingId) {
         await updateLoad(editingId, payload);
+        await fetchLoads();
       } else {
-        await createLoad(payload);
+        const createdLoad = await createLoad(payload);
+        if (keepEditingAfterCreate && createdLoad?.id) {
+          setEditingId(createdLoad.id);
+          await fetchExtraDocuments(createdLoad.id);
+          await fetchLoads();
+          router.replace(`/loads?loadId=${createdLoad.id}`, { scroll: false });
+          return;
+        }
       }
       setForm(initialForm());
       setEditingId(null);
       setAssignedDrivers([]);
-      fetchLoads();
+      await fetchLoads();
+      router.replace("/loads", { scroll: false });
     } catch (e) {
       setError(e.message);
+      throw e;
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
+    try {
+      await persistLoad({ keepEditingAfterCreate: submitMode === "save-and-continue" });
+    } catch {
+      // Error state is already set in persistLoad.
+    }
   };
 
   const handleEdit = async load => {
@@ -386,6 +408,21 @@ export default function LoadsPage() {
 
     window.scrollTo(0, 0);
   };
+
+  useEffect(() => {
+    if (editingId || loads.length === 0) return;
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const idParam = params.get("loadId");
+    if (!idParam) return;
+
+    const match = loads.find((load) => String(load.id) === String(idParam));
+    if (!match) return;
+
+    handleEdit(match);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loads, editingId]);
 
   const handleDelete = async id => {
     if (!confirm("Delete this load?")) return;
@@ -770,9 +807,24 @@ export default function LoadsPage() {
           </div>
 
           <div className="flex gap-2 mt-2 md:col-span-3">
-            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition disabled:opacity-60" disabled={loading}>
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition disabled:opacity-60"
+              disabled={loading}
+              onClick={() => setSubmitMode("save-and-close")}
+            >
               {editingId ? "Update" : "Add"} Load
             </button>
+            {!editingId && (
+              <button
+                type="submit"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition disabled:opacity-60"
+                disabled={loading}
+                onClick={() => setSubmitMode("save-and-continue")}
+              >
+                Save Load
+              </button>
+            )}
             {editingId && (
               <button type="button" className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-6 py-2 rounded-lg shadow transition" onClick={() => {
                 setForm({
@@ -797,7 +849,7 @@ export default function LoadsPage() {
                   podStatus: "pending",
                   rateConfStatus: "pending",
                   expectedPaymentDate: "",
-                }); setEditingId(null); setAssignedDrivers([]);
+                }); setEditingId(null); setAssignedDrivers([]); router.replace("/loads", { scroll: false });
               }}>
                 Cancel
               </button>
